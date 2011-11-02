@@ -8,14 +8,21 @@ import logging
 import MySQLdb as mdb
 import sys
 from collections import namedtuple
+import json
+import re
 
 __author__ = "Rami Al-Rfou"
 __email__ = "rmyeid@gmail.com"
 
+LOG_FORMAT = "%(asctime).19s %(levelname)s %(filename)s: %(lineno)s %(message)s"
+
 USER = "rmyeid"
-DB = "wikipedia"
+#DB = "wikipedia"
+DB = "categories"
 PASSWORD = "bla"
-HOST = "localhost"
+HOST = "carnap"
+
+LANGUAGE_CATEGORY = re.compile('^User_[^_]*?-[^_]*?$')
 
 Revision = namedtuple("Revision", ("rev_id rev_page rev_text_id rev_comment "
                                     "rev_user rev_user_text rev_timestamp "
@@ -23,11 +30,12 @@ Revision = namedtuple("Revision", ("rev_id rev_page rev_text_id rev_comment "
 
 Text = namedtuple("Text", ("old_id old_text old_flags"))
 
+Category = namedtuple("Category", ("cl_from cl_to cl_sortkey cl_timestamp cl_sortkey_prefix cl_collation cl_type"))
 
 class WikipediaDB(object):
   
   def __init__(self, host=HOST, user=USER, password=PASSWORD, db=DB):
-    self.conn = mdb.connect(HOST, USER, PASSWORD, DB);
+    self.conn = mdb.connect(host, user, password, db);
 
   def close(self):
     self.conn.close()
@@ -44,6 +52,23 @@ class WikipediaDB(object):
         revision = revision._replace(rev_parent_id= -1)
         rev_previous = revision
       yield revision
+
+  def build_user_language_dictionary(self):
+    query = "select * from language where cl_to like 'User\_%-%';"
+    users = {}
+    for cat in self._execute(query):
+      category = Category(*cat)
+      username = category.cl_sortkey.replace('\n','/').split('/', 1)[0].replace(' ', '_')
+      language = category.cl_to
+      if LANGUAGE_CATEGORY.match(language):
+        if username in users:
+          users[username].append(language)
+        else:
+          users[username] = [language]
+    for user in users:
+      users[user] = list(set(users[user]))
+    logging.debug('%d users were found' % len(users))
+    return users
 
   def text(self, text_id):
     query = "select * from text where old_id=%d;" % text_id
@@ -65,13 +90,14 @@ class WikipediaDB(object):
 def main(options, args):
   try:
     db = WikipediaDB()
-    data = db.revisions(12).next()
+    users_languages = db.build_user_language_dictionary()
+    fh = open(options.filename, 'w')
+    json.dump(users_languages, fh, indent=2)
     db.close()
   except mdb.Error, e:
     print "Error %d: %s" % (e.args[0],e.args[1])
     sys.exit(1)
 
-  print data
 
 
 if __name__ == "__main__":
@@ -82,6 +108,6 @@ if __name__ == "__main__":
   (options, args) = parser.parse_args()
 
   numeric_level = getattr(logging, options.log.upper(), None)
-  logging.basicConfig(level=numeric_level)
+  logging.basicConfig(level=numeric_level, format=LOG_FORMAT)
   main(options, args)
 
