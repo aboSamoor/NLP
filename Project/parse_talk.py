@@ -6,6 +6,7 @@
 from optparse import OptionParser
 import logging
 import re
+import json
 
 __author__ = "Rami Al-Rfou"
 __email__ = "rmyeid@gmail.com"
@@ -44,12 +45,14 @@ def sections(text):
   # Split page by sections, do not report the sections
   return re.split(SECTION_HEADERS, text)
 
+
 def parse_signature(text):
   patterns = [ALL, NO_TALK, NO_TIME]
   for pattern in patterns:
     match = pattern.match(text)
     if match:
       return match.groupdict()
+
 
 def split(compiled_pattern, text, groups=[]):
   results = []
@@ -71,6 +74,7 @@ def split(compiled_pattern, text, groups=[]):
     results.append((text[start:], user_groupdict))
   return results
 
+
 def users_comments(text):
   comments = split(SIGNATURE, text)
   parsed_comments = []
@@ -91,7 +95,8 @@ def parse_page(text):
 def main(options, args):
   text = open(options.filename, 'r').read()
   text = text.decode('utf-8')
-  return parse_page(text)
+  result = parse_page(text)
+  json.dump(result, open(options.filename+'.res', 'w'), indent=2)
 
 
 if __name__ == "__main__":
