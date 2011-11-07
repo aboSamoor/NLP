@@ -14,11 +14,11 @@ __email__ = "rmyeid@gmail.com"
 LOG_FORMAT = "%(asctime).19s %(levelname)s %(filename)s: %(lineno)s %(message)s"
 
 
-_no_new_user = '[^]|[]*'
+_sep = '[^]|[]*?'
 _no_new_user2 = '[^][]*?'
-_user = '[[]{2}User:%s\|%s[]]{2}' % (_no_new_user, _no_new_user2)
-_named_user = '[[]{2}User:(?P<username>%s)\|%s[]]{2}' % (_no_new_user, _no_new_user2)
-_talk_page = '[[]{2}User talk:%s\|%s[]]{2}' % (_no_new_user, _no_new_user2)
+_user = '[[]{2}User:%s\|%s[]]{2}' % (_sep, _no_new_user2)
+_named_user = '[[]{2}User:(?P<username>%s)\|%s[]]{2}' % (_sep, _no_new_user2)
+_talk_page = '[[]{2}User talk:%s\|%s[]]{2}' % (_sep, _no_new_user2)
 
 _hour = '\d{1,2}:\d{1,2}'
 _day = '\d{1,2}'
@@ -29,7 +29,6 @@ _time = '%s,\s*?%s\s*?%s\s*?%s\s*?\(%s\)' % (_hour, _day, _month, _year, _zone)
 _named_time = '(?P<time>%s,\s*?%s\s*?%s\s*?%s\s*?\(%s\))' % (_hour, _day,
                                                              _month, _year, _zone)
 
-_sep = '[\(\),\'\"\s]*?'
 _all = '%s%s%s%s%s' % (_user, _sep, _talk_page, _sep, _time)
 ALL = re.compile('%s%s%s%s%s' % (_named_user, _sep, _talk_page, _sep, _named_time))
 _no_talk = '%s%s%s' % (_user, _sep, _time)
@@ -38,6 +37,27 @@ _no_time = '%s%s%s' % (_user, _sep, _talk_page)
 NO_TIME = re.compile('%s%s%s' % (_named_user, _sep, _talk_page))
 SIGNATURE = re.compile('%s|%s|%s' % (_all, _no_talk, _no_time))
 
+HTML_TAGS1 = ["code", "math", "var", "ruby", "rb", "rt", "rp", "hr", "br"]
+__TAGS1 = '|'.join(HTML_TAGS1)
+_TAGS1 = "<(?P<tag>%s)([ ].*?)?(/)?>(?(3)|(.*?)</(?P=tag)>)" % __TAGS1
+
+HTML_TAGS2 = ["b", "big", "blockquote," "caption", "center", "cite", "dd",
+              "div", "dl", "dt", "em", "font", "h1", "h2", "h3", "h4", "h5",
+              "h6", "i", "li", "ol", "p", "s", "small", "strike", "strong",
+              "sub", "sup", "table", "td", "th", "tr", "tt", "u", "ul", "nowiki", "pre"]
+__TAGS2 = '|'.join(HTML_TAGS2)
+_TAGS2 = "<(?P<tag>%s)([ ].*?)?(/)?>((?(3)(\\b|\\B)|.*?))(?(3)|</(?P=tag)>)" % __TAGS2
+
+CLEAN_TAGS1 = re.compile(_TAGS1, re.I | re.S)
+CLEAN_TAGS2 = re.compile(_TAGS2, re.I | re.S) 
+
+def clean_html_tags(x):
+    y = x
+    while CLEAN_TAGS1.search(y):
+      y = CLEANS_TAGS1.sub("", y)
+    while CLEAN_TAGS2.search(y):
+      y= CLEAN_TAGS2.sub("\\4", y)  
+    return y
 
 
 def sections(text):
@@ -88,7 +108,11 @@ def parse_page(text):
   sects = sections(text)
   cmmts = []
   for section in sects:
-    cmmts.extend(users_comments(section))
+    cleaned_section = clean_html_tags(section)
+    logging.debug(section.encode("utf-8"))
+    logging.debug("Cleaned--------------------------------------")
+    logging.debug(cleaned_section.encode("utf-8"))
+    cmmts.extend(users_comments(cleaned_section))
   return cmmts
 
 
@@ -109,4 +133,3 @@ if __name__ == "__main__":
   numeric_level = getattr(logging, options.log.upper(), None)
   logging.basicConfig(level=numeric_level, format=LOG_FORMAT)
   main(options, args)
-
