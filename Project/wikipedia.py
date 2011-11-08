@@ -83,13 +83,9 @@ class WikipediaDB(object):
 
   def _execute(self, query):
     cursor = self.conn.cursor()
-    try:
-      cursor.execute(query)
-    except Exception, e:
-      logging.error("Query %s faild" % query)
-      
+    cursor.execute(query)
     row = cursor.fetchone()
-    while row:
+    while row is not None:
       yield row
       row = cursor.fetchone()
     cursor.close()
@@ -112,7 +108,7 @@ class WikipediaDB(object):
     cursor.close()
 
   def talk_pages(self, table):
-    query = "select * from %s order by page_id;" % table
+    query = "select * from %s;" % table
     for page in self._execute(query):
       yield TalkPage(*page)
     
