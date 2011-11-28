@@ -18,19 +18,37 @@ from nltk.probability import LidstoneProbDist, SimpleGoodTuringProbDist
 import functools
 import pdb
 from cPickle import dump, load
+from nltk.corpus import stopwords
+from nltk.classify.maxent import MaxentClassifier
+from multiprocessing import Pool, cpu_count
 
 __author__ = "Rami Al-Rfou"
 __email__ = "rmyeid@gmail.com"
 
 LOG_FORMAT = "%(asctime).19s %(levelname)s %(filename)s: %(lineno)s %(message)s"
 
-TRAIN = [(comment, label) for (comment, label) in json.load(open('data/train.0.0-0.1.tok.json.txt', 'r'))]
-DEV = [(comment, label) for (comment, label) in json.load(open('data/dev.0.0-0.1.tok.json.txt', 'r'))]
-TEST = [(comment, label) for (comment, label) in json.load(open('data/test.0.0-0.1.tok.json.txt', 'r'))]
+__ranges = [(0.0, 0.1), (0.1, 0.2), (0.2, 0.3)]
+TRAIN = []
+DEV = []
+TEST = []
+for segment in __ranges:
+  start, end = segment
+  TRAIN.extend(json.load(open('data/train.%.1f-%.1f.tok.json.txt' %(start, end), 'r')))
+  DEV.extend(json.load(open('data/dev.%.1f-%.1f.tok.json.txt' % (start, end), 'r')))
+  TEST.extend(json.load(open('data/test.%.1f-%.1f.tok.json.txt' % (start, end), 'r')))
+
+TRAIN = filter(lambda x: x[0][0], TRAIN)
+DEV = filter(lambda x: x[0][0] and x[1], DEV)
+TEST = filter(lambda x: x[0][0] and x[1], TEST)
+
+__train_fs = []
+__dev_fs = []
+
 LANGUAGES = list(set([label for comment,label in TRAIN]))
 
 SENTENCE_SPLITTER =  nltk.data.load('tokenizers/punkt/english.pickle')
 WORD_TOKENIZER = nltk.TreebankWordTokenizer()
+EN_STOPWORDS = stopwords.words('english') 
 
 class Memoized(object):
   """Decorator that caches a function's return value each time it is called.
@@ -163,18 +181,20 @@ class Perplexity(MultiClassifierI):
 
   def classify(self, comment):
     words = sum(comment, [])
-    if not words:
-      return None
     probabilities = []
     for label in self.labels():
-      p = 0
-      for statement in comment:
-        p += self._model[label].entropy(statement)
-      p /= len(words)
-      probabilities.append((p,label))
+      probabilities.append((comment_perplexity(comment, self._model[label]), label))
     return min(probabilities)[1]
-      
-  
+
+
+def comment_perplexity(comment, model):
+  e = 0.0
+  words = sum(comment, [])
+  for statement in comment:
+    e += model.entropy(statement)
+  e /= len(words)
+  return e
+
 
 @Serialized
 def language_ngrams(n, training):
@@ -190,21 +210,91 @@ def language_ngrams(n, training):
   return language_ngrams
 
 
-def maxent_featureset(unlabeled_token):
-  pass
+UNIGRAMS = language_ngrams('Unigram_TRAIN', 1, TRAIN)
+def featureset(sample):
+  comment, label = sample
+  features = {}
+  words = sum(comment, [])
+  size_= sum([len(word) for word in words])
+  features['stmt_len'] = len(words)/float(len(comment))
+  features['word_len'] = size_/float(len(words))
+  features['size'] = size_ 
+  size_= sum([len(word) for word in words])
+  dist = FreqDist([word.lower() for word in words])
+  for word in EN_STOPWORDS:
+    features[word] = dist.get(word, 0)/float(len(words))
+  features['alwayson'] = True
+#  for language in LANGUAGES:
+#    features['perp_%s' % language] = comment_perplexity(comment, UNIGRAMS[language])
+  return (features, label)
 
+@Serialized
+def samples_featuresets(samples):
+  p = Pool(cpu_count())
+  return p.map(featureset, samples)
+
+def sigma(lambda_):
+  return (1.0/lambda_)**(0.5)
+
+def pick_lambda(train, dev):
+  global __train_fs, __dev_fs
+#  lambdas = [0.01, 0.1, 0.3, 1, 3, 10, 30, 100]
+#  lambdas = [0.01, 1, 10]
+  lambdas = [1]
+  __train_fs = train
+  __dev_fs = dev
+  if len(lambdas) ==1:
+    return maxent_classifier(lambdas[0])
+  else:
+    p = Pool(cpu_count())
+    return p.map(maxent_classifier, lambdas)
+
+def maxent_classifier(lambda_):
+  sigma_ = sigma(lambda_)
+  maxent = maxentropy('maxent_%4.4f' % lambda_, __train_fs, sigma_)
+  logging.info("Finished training the classifier lambda=%f ..." % lambda_)
+  dev_acc = accuracy(maxent, __dev_fs)
+  logging.info("MaxEnt_classifier lambda=%f accuracy on DEV is: %3.5f",
+                lambda_, dev_acc)
+  train_acc = accuracy(maxent, __train_fs)
+  logging.info("MaxEnt_classifier lambda=%f accuracy on TRAIN is: %3.5f",
+                lambda_, train_acc)
+  return (lambda_, dev_acc, train_acc)
+
+@Serialized
+def maxentropy(samples_fs, sigma=0):
+  maxent = MaxentClassifier.train(samples_fs, 'MEGAM', gaussian_prior_sigma=sigma)
+  return maxent
 
 def main(options, args):
+  logging.info("Training Size: %d\t DEV size: %d\t TEST size:%d"
+               % (len(TRAIN), len(DEV), len(TEST)))
 #  random_classifier = Random()
 #  logging.debug("random_classifier labels are:\n %s", str(random_classifier.labels()))
 #  logging.info("random_classifier accuracy is: %3.3f", accuracy(random_classifier, TEST))
+
 #  most_common = MostCommon()
 #  logging.debug("MostCommon_classifier labels are:\n %s", str(most_common.labels()))
 #  logging.info("MostCommon_classifier accuracy is: %3.3f", accuracy(most_common, TEST))
-  perp = Perplexity()
-  logging.debug("Perplexity_classifier labels are:\n %s", str(perp.labels()))
-  logging.info("Perplexity_classifier accuracy is: %3.3f", accuracy(perp, TEST))
 
+#  perp = Perplexity()
+#  logging.debug("Perplexity_classifier labels are:\n %s", str(perp.labels()))
+#  logging.info("Perplexity_classifier accuracy is: %3.3f", accuracy(perp, DEV))
+
+  logging.info("Started calculating the featuresets ...")
+  train_fs = samples_featuresets('TRAIN_FS', TRAIN)
+  logging.info("Finished calculating the featuresets of training...")
+  dev_fs = samples_featuresets('DEV_FS', DEV)
+  logging.info("Finished calculating the featuresets of development...")
+  maxent = maxentropy('maxent_%4.4f' % 1.0, train_fs, sigma(1))
+#  stats = pick_lambda(train_fs, dev_fs)
+#  text = '\n'.join([', '.join([str(num) for num in stat]) for stat in stats])
+#  print '\n---------------------\n',text
+
+  result = [maxent.classify(fs) for fs,label in dev_fs]
+  gold = [label for fs,label in dev_fs]
+  cm = nltk.ConfusionMatrix(gold, result)
+  print cm.pp(sort_by_count=True, show_percents=True, truncate=20)
 
 if __name__ == "__main__":
   parser = OptionParser()
