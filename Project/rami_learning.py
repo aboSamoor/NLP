@@ -27,7 +27,7 @@ __email__ = "rmyeid@gmail.com"
 
 LOG_FORMAT = "%(asctime).19s %(levelname)s %(filename)s: %(lineno)s %(message)s"
 
-__ranges = [(0.0, 0.1), (0.1, 0.2), (0.2, 0.3)]
+__ranges = [(0.0, 0.1)]
 TRAIN = []
 DEV = []
 TEST = []
@@ -228,19 +228,41 @@ def featureset(sample):
 #    features['perp_%s' % language] = comment_perplexity(comment, UNIGRAMS[language])
   return (features, label)
 
+
 @Serialized
 def samples_featuresets(samples):
   p = Pool(cpu_count())
   return p.map(featureset, samples)
 
+
+def normalize(featuresets, feature):
+  values = [fs.get(feature, 0) for fs, label in featuresets]
+  range_ = max(values) - min(values)
+  avg = sum(values)/float(len(values))
+  for i in range(len(featuresets)):
+    old_value = featuresets[i][0].get(feature, 0)
+    new_value = (old_value-avg)/range_
+    featuresets[i][0][feature] = new_value
+
+
+def normalize_featuresets(featuresets):
+  fs, label = featuresets[0]
+  def isnumeric(x):
+    return type(x) in {type(1), type(1.0), type(1L)}
+  numeric_features = [f for f,v in filter(lambda fv: isnumeric(fv[1]), fs.items())]
+  for feature in numeric_features:
+    normalize(featuresets, feature)
+
+
 def sigma(lambda_):
   return (1.0/lambda_)**(0.5)
+
 
 def pick_lambda(train, dev):
   global __train_fs, __dev_fs
 #  lambdas = [0.01, 0.1, 0.3, 1, 3, 10, 30, 100]
-#  lambdas = [0.01, 1, 10]
-  lambdas = [1]
+  lambdas = [0.1, 10]
+#  lambdas = [1]
   __train_fs = train
   __dev_fs = dev
   if len(lambdas) ==1:
@@ -248,6 +270,7 @@ def pick_lambda(train, dev):
   else:
     p = Pool(cpu_count())
     return p.map(maxent_classifier, lambdas)
+
 
 def maxent_classifier(lambda_):
   sigma_ = sigma(lambda_)
@@ -261,10 +284,12 @@ def maxent_classifier(lambda_):
                 lambda_, train_acc)
   return (lambda_, dev_acc, train_acc)
 
+
 @Serialized
 def maxentropy(samples_fs, sigma=0):
   maxent = MaxentClassifier.train(samples_fs, 'MEGAM', gaussian_prior_sigma=sigma)
   return maxent
+
 
 def main(options, args):
   logging.info("Training Size: %d\t DEV size: %d\t TEST size:%d"
@@ -283,13 +308,15 @@ def main(options, args):
 
   logging.info("Started calculating the featuresets ...")
   train_fs = samples_featuresets('TRAIN_FS', TRAIN)
+  normalize_featuresets(train_fs)
   logging.info("Finished calculating the featuresets of training...")
   dev_fs = samples_featuresets('DEV_FS', DEV)
+  normalize_featuresets(train_fs)
   logging.info("Finished calculating the featuresets of development...")
-  maxent = maxentropy('maxent_%4.4f' % 1.0, train_fs, sigma(1))
-#  stats = pick_lambda(train_fs, dev_fs)
-#  text = '\n'.join([', '.join([str(num) for num in stat]) for stat in stats])
-#  print '\n---------------------\n',text
+#  maxent = maxentropy('maxent_%4.4f' % 1.0, train_fs, sigma(1))
+  stats = pick_lambda(train_fs, dev_fs)
+  text = '\n'.join([', '.join([str(num) for num in stat]) for stat in stats])
+  print '\n---------------------\n',text
 
   result = [maxent.classify(fs) for fs,label in dev_fs]
   gold = [label for fs,label in dev_fs]
