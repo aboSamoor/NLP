@@ -42,7 +42,7 @@ class SennaTagger(TaggerI):
     def batch_tag(self, sentences):
         encoding = self._encoding
 
-        executable_ = os.path.join(self._path, 'senna-linux64')
+        executable_ = os.path.join(self._path, 'senna')
         # Build the senna command to run the tagger
         _senna_cmd = [executable_, '-path', self._path, '-usrtokens', '-pos']
 
@@ -91,7 +91,7 @@ class SennaTagger(TaggerI):
     def corpus_tag(self, articles):
         encoding = self._encoding
 
-        executable_ = os.path.join(self._path, 'senna-linux64')
+        executable_ = os.path.join(self._path, 'senna')
         # Build the senna command to run the tagger
         _senna_cmd = [executable_, '-path', self._path, '-usrtokens', '-pos']
 
@@ -131,8 +131,19 @@ class SennaTagger(TaggerI):
           tagged_corpus.append(tagged_sentences[limits[i]:limits[i+1]])
 
         tagged_corpus = [self._process_article(article) for article in tagged_corpus]
+
         new_lengths = [len(article) for article in tagged_corpus]
         if new_lengths != lengths:
           raise Exception("The %d tagged sentences are not matching %d original"
                           " sentneces" % (sum(new_lengths), sum(lengths)))
+
+        for i in range(len(tagged_corpus)):
+          for j in range(len(tagged_corpus[i])):
+            if len(articles[i][j]) != len(tagged_corpus[i][j]):
+              print articles[i][j]
+              print tagged_corpus[i][j]
+              open("input.txt", "w").write(_input)
+              open("senna_result.txt", "w").write(senna_output.encode(encoding))
+              raise Exception("Sentences size are not matching. Files are dumped")
+              
         return tagged_corpus
