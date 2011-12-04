@@ -69,6 +69,7 @@ def main(options, args):
 #  for samples_ in splitted_samples:
 #    results.append(process(samples_))
   results = p.map(process, splitted_samples)
+  results = sum(results, [])
   json.dump(results, open(options.filename+'.pos', 'w'))
 
 
