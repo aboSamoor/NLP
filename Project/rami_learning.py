@@ -24,55 +24,108 @@ from multiprocessing import Pool, cpu_count
 import perceptron
 from numpy import array
 from sklearn import linear_model, svm
+from sklearn.feature_selection import RFE
 from math import log
 from settings import *
+from re import compile
 
 __author__ = "Rami Al-Rfou"
 __email__ = "rmyeid@gmail.com"
 
 LOG_FORMAT = "%(asctime).19s %(levelname)s %(filename)s: %(lineno)s %(message)s"
+EN_STOPWORDS = stopwords.words('english') 
+
+
+def is_ascii(char):
+  return ord(char) <= 128
+
+
+def replace_non_ascii(char):
+  if not is_ascii(char):
+    return '*'
+  return char
+
+
+def clean_word(tagged_word):
+  word, tag = tagged_word
+  return (''.join([replace_non_ascii(c) for c in word]), tag)
+
+
+def replace_NNP(tagged_word):
+  word, tag = tagged_word
+  if tag in ['NNP', 'NNPS']:
+    return (tag, tag)
+  return (word,tag)
+
+
+def _map(func, list_, num_processors=2):
+  p = Pool(num_processors)
+  results = p.map(func, list_)
+  p.close()
+  p.join()
+  return results
+
+
+def clean_comment(sample):
+  comment, label = sample
+  new_comment = [[replace_NNP(tagged_word) for tagged_word in statement] for statement in comment]
+  new_comment_2 = [[clean_word(tagged_word) for tagged_word in statement] for statement in new_comment]
+  return new_comment_2, label
+
+
+def to_string_comment(sample):
+  text = ""
+  comment, label = sample
+  for statement in comment:
+    text += ' '.join([word for word,tag in statement])
+    text += ' '
+  text += '\n'+label
+  return text
+
+
+def to_string_samples(samples):
+  results = _map(to_string_comment, samples, (cpu_count()/6)+1)
+  return '\n\n'.join(results)
 
 
 def prune_data(samples):
   """Decide which samples are valid"""
   def is_valid(sample):
     comment, label = sample
-    cond_1 = len(comment) >= NUM_SENTS and len(comment[0]) >= LEN_1SENT
-    cond_2 = label in ACCEPTED_LANGUAGES
-    if cond_1 and cond_2:
+    cond_1 = len(comment) >= 1 and len(comment[0]) >= 1
+    cond_2 = label in MAP
+    cond_3 = sum([len(statement) for statement in comment]) >= COMMENT_SIZE
+    if cond_1 and cond_2 and cond_3:
       return True
     return False
+
   samples = filter(is_valid, samples)
-  _, labels = zip(*samples)
+
+  comments, labels = zip(*samples)
+  labels = [MAP[l] for l in labels]
+  samples = zip(comments, labels)
+
+  # Balance data
   dist = FreqDist(labels)
   smallest_number = dist.items()[-1][1]
+
   new_samples = []
   counts = {}
-  for lang in ACCEPTED_LANGUAGES:
+  for lang in dist.keys():
     counts[lang] = 0
+
   for sample in samples:
     comment, label = sample
     if counts[label] <= smallest_number:
       new_samples.append(sample)
       counts[label] += 1
+
+  # clean data
+  if CLEAN:
+    new_samples = _map(clean_comment, new_samples)
+    open('clean_data.txt', 'w').write(to_string_samples(new_samples))
   return new_samples
 
-
-TRAIN = json.load(open('data/train.json.txt.pos.20', 'r'))
-DEV  = json.load(open('data/dev.json.txt.pos.20', 'r'))
-TEST = json.load(open('data/test.json.txt.pos.20', 'r'))
-
-TRAIN = prune_data(TRAIN) 
-DEV = prune_data(DEV)
-TEST = prune_data(TEST)
-
-__train_fs = []
-__dev_fs = []
-
-LANGUAGES = list(set([label for comment,label in TRAIN]))
-TAGS = list(set([tag for comment,label in DEV for statement in comment for word,tag in statement]))
-
-EN_STOPWORDS = stopwords.words('english') 
 
 class Memoized(object):
   """Decorator that caches a function's return value each time it is called.
@@ -206,8 +259,8 @@ class Scikit(MultiClassifierI):
     self._map = dict(zip(labels, range(len(labels))))
     self._rmap = dict(zip(range(len(labels)), labels))
     C = 1.0/lambda_
-#    self._clf = linear_model.LogisticRegression(C=C)
-    self._clf = svm.SVC(C=C)
+    self._clf = linear_model.LogisticRegression(C=C)
+#    self._clf = svm.SVC(C=C)
     self._fx = None
 
   def _fsets2dataset(self, samples):
@@ -240,13 +293,28 @@ class Scikit(MultiClassifierI):
     return self
 
 
+  def show_most_informative_features(self, samples):
+    X, y = self._fsets2dataset(samples)
+    rfe = RFE(self._clf, 1)
+    rfe.fit(X, y)
+    ranking = rfe.ranking_
+    if len(ranking) != len(self._fx):
+      logging.error("Both feature ranking and features should have the same"
+                     "length %d != %d", len(ranking), len(self._fx))
+    fx_ranking = []
+    for i in range(len(self._fx)):
+      fx_ranking.append((ranking[i], self._fx[i]))
+    self._clf.fit(X, y)
+    return '\n'.join(['\t'.join([str(y),str(x)]) for x,y in sorted(fx_ranking)])
+      
+      
 def similarity(freqdist, sequence, n):
   """Calculate the log of the counts of the n-grams of a sequence against a
      precomputed a frequency distribution"""
   similarity = 0.0
-  ngrams_ = ngrams(sequence, n, True, True, '<P>')
+  ngrams_ = ngrams(sequence, n, True, True)
   for ngram in ngrams_:
-    count = freqdist.get(ngram, 1.0)
+    count = freqdist[n].get(ngram, 1.0)
     similarity += log(count, 2)
   return similarity/len(sequence)
 
@@ -257,14 +325,14 @@ def comment_similarity(model, comment, n):
   words_similarity = 0.0
   tags_similarity = 0.0
   char_similarity = 0.0
+  size = float(len(comment))
   for statement in comment:
     words,tags = zip(*statement)
     statement_text = ' '.join(words)
-    size = float(len(words))
     char_similarity += similarity(model["chars"], statement_text, n)
     words_similarity += similarity(model["words"], words, n)
     tags_similarity += similarity(model["tags"], tags, n)
-  return words_similarity, tags_similarity, char_similarity
+  return [value/size for value in [words_similarity, tags_similarity, char_similarity]]
     
 
 def comment_perplexity(comment, model):
@@ -307,21 +375,19 @@ def language_distribution(n, training):
   """Calculate the ngrams distribution up to n"""
   language_dist = {}
   for language in LANGUAGES:
-    language_dist[language] = {"words": FreqDist(),
-                               "tags": FreqDist(),
-                               "chars": FreqDist()}
+    language_dist[language] = {"words": dict(zip(range(1, n+1), [FreqDist() for i in range(1, n+1)])),
+                               "tags": dict(zip(range(1, n+1), [FreqDist() for i in range(1, n+1)])),
+                               "chars": dict(zip(range(1, n+1), [FreqDist() for i in range(1, n+1)]))}
   for comment, language in training:
     for statement in comment:
       words, tags = zip(*statement)
       statement_text = ' '.join(words)
       for i in range(1, n+1):
-        language_dist[language]["words"].update(nltk.ngrams(words, i))
-        language_dist[language]["tags"].update(nltk.ngrams(tags, i))
-        language_dist[language]["chars"].update(nltk.ngrams(statement_text, i))
+        language_dist[language]["words"][i].update(nltk.ngrams(words, i))
+        language_dist[language]["tags"][i].update(nltk.ngrams(tags, i))
+        language_dist[language]["chars"][i].update(nltk.ngrams(statement_text, i))
   return language_dist
 
-n = 4
-GRAMS = language_distribution('Model_TRAIN', n, TRAIN)
 
 def featureset(sample):
   comment, label = sample
@@ -352,21 +418,20 @@ def featureset(sample):
 
 @Serialized
 def samples_featuresets(samples):
-  p = Pool(cpu_count()/4)
-  fs = p.map(featureset, samples)
+  fs = _map(featureset, samples, (cpu_count()/8)+1)
   normalize_featuresets(fs)
   return fs
 
 
 def normalize(featuresets, feature):
-  values = [fs.get(feature, 0) for fs, label in featuresets]
-  range_ = max(values) - min(values)
-  avg = sum(values)/float(len(values))
+  values = array([fs.get(feature, 0) for fs, label in featuresets])
+  std = values.std()
+  avg = values.mean()
   for i in range(len(featuresets)):
     old_value = featuresets[i][0].get(feature, 0)
     new_value = old_value
-    if range_ != 0:
-      new_value = (old_value-avg)/range_
+    if std != 0:
+      new_value = (old_value-avg)/std
     featuresets[i][0][feature] = new_value
 
 
@@ -385,41 +450,36 @@ def sigma(lambda_):
 
 def pick_lambda(train, dev):
   global __train_fs, __dev_fs
-  lambdas = [0.01, 0.1, 0.3, 1, 3, 10, 30, 100, 300, 1000, 3000, 10000]
-#  lambdas = [0.01, 3, 10, 30, 100]
-#  lambdas = [30, 100, 300]
-#  lambdas = [3]
   __train_fs = train
   __dev_fs = dev
-  if len(lambdas) ==1:
-    return [classifier(lambdas[0])]
+  if len(LAMBDAS) == 1:
+    return [classifier(LAMBDAS[0])]
   else:
-    p = Pool(cpu_count())
-    return p.map(classifier, lambdas)
-
+    result = _map(classifier, LAMBDAS, (cpu_count()/8)+1)
+    return result
+    
 
 def classifier(lambda_):
   clf = get_classifier('%f' % lambda_, __train_fs, lambda_)
-  logging.info("Finished training the classifier lambda=%f ..." % lambda_)
+  logging.debug("Finished training the classifier lambda=%f ..." % lambda_)
   dev_acc = accuracy(clf, __dev_fs)
-  logging.info("classifier lambda=%f accuracy on DEV is: %3.5f",
+  logging.debug("classifier lambda=%f accuracy on DEV is: %3.5f",
                 lambda_, dev_acc)
   train_acc = accuracy(clf, __train_fs)
-  logging.info("classifier lambda=%f accuracy on TRAIN is: %3.5f",
+  logging.debug("classifier lambda=%f accuracy on TRAIN is: %3.5f",
                 lambda_, train_acc)
 #  clf.show_most_informative_features()
   result = [clf.classify(fs) for fs,label in __dev_fs]
   gold = [label for fs,label in __dev_fs]
   cm = nltk.ConfusionMatrix(gold, result)
   cf_text = cm.pp(sort_by_count=True, show_percents=True, truncate=20)
-  open('cm.%.4f.log' % lambda_, 'w').write(cf_text)
-  return (lambda_, dev_acc, train_acc)
+  return (lambda_, dev_acc, train_acc, cf_text, clf)
 
 
 @Serialized
 def get_classifier(samples_fs, lambda_=1):
 #  sigma_ = sigma(lambda_)
-#  clf = MaxentClassifier.train(samples_fs, 'IIS',
+#  clf = MaxentClassifier.train(samples_fs, 'MEGAM',
 #                                  gaussian_prior_sigma=sigma_)
   clf = Scikit(lambda_).train(samples_fs)
   return clf
@@ -430,10 +490,48 @@ def stats(samples):
   dist = FreqDist(labels)
   size = len(samples)
   for key in dist.keys():
-    print key, dist[key]/float(size)
+    logging.info("%s\t%f" % (key, dist[key]/float(size)))
+
 
 def main(options, args):
+
+  global TRAIN, DEV, TEST, MAP, GRAMS, LANGUAGES, TAGS, __train_fs, __dev_fs, __test_fs
+
+  exps_MAPS ={'g': MAP_GROUPS, 'p': MAP_POPULAR, 'f': MAP_FOREIGN}
+  MAP = exps_MAPS[options.exp]  
+  logging.info("Eperiment mode is %s" % options.exp)
+
+  TRAIN = json.load(open(TRAIN_FILE, 'r'))
+  DEV  = json.load(open(DEV_FILE, 'r'))
+  TEST = json.load(open(TEST_FILE, 'r'))
+  logging.info("Data is loaded")
+
+  TRAIN = prune_data(TRAIN) 
+  DEV = prune_data(DEV)
+  TEST = prune_data(TEST)
+  logging.info("Data is filtered")
   
+  TAGS = list(set([tag for comment,label in DEV for statement in comment for word,tag in statement]))
+  LANGUAGES = list(set([label for comment,label in TRAIN]))
+  GRAMS = language_distribution('Model_TRAIN', n, TRAIN)
+
+
+  logging.info("Ngrams calculated up to: %d\n" % n)
+  logging.info("ACCEPTED_LANGUAGES: %s\n" % str(MAP.keys()))
+  logging.info("LANGUAGES_MAP: %s\n" % str(MAP))
+  logging.info("Comment Minimum Size: %d" % COMMENT_SIZE)
+  logging.info("Percentage of data used: %d" % PERCENTAGE)
+  if CLEAN:
+    logging.info("NPP(S) are replaced by their tags and non ascii characters are replaced by a special character: %d" % CLEAN)
+ 
+ 
+  logging.info("Training Size: %d\t DEV size: %d\t TEST size:%d"
+               % (len(TRAIN), len(DEV), len(TEST)))
+  total_size = float(len(TRAIN) + len(DEV) + len(TEST))
+  logging.info("Training Size: %f\t DEV size: %f\t TEST size:%f"
+               % (len(TRAIN)/total_size, len(DEV)/total_size, len(TEST)/total_size))
+  
+ 
   random_classifier = Random()
   logging.debug("random_classifier labels are:\n %s", str(random_classifier.labels()))
   logging.info("random_classifier accuracy is: %3.3f", accuracy(random_classifier, TEST))
@@ -446,29 +544,52 @@ def main(options, args):
 #  logging.debug("Perplexity_classifier labels are:\n %s", str(perp.labels()))
 #  logging.info("Perplexity_classifier accuracy is: %3.3f", accuracy(perp, DEV))
 
-  logging.info("Started calculating the featuresets ...")
+  logging.debug("Started calculating the featuresets ...")
   train_fs = samples_featuresets('TRAIN_FS', TRAIN)
-  logging.info("Finished calculating the featuresets of training...")
+  logging.info("Features calculated:\n%s\n" %(",".join([str(key) for key in train_fs[0][0].keys()])))
+  logging.debug("Finished calculating the featuresets of training...")
   dev_fs = samples_featuresets('DEV_FS', DEV)
-  logging.info("Finished calculating the featuresets of development...")
+  logging.debug("Finished calculating the featuresets of development...")
   results = pick_lambda(train_fs, dev_fs)
-  logging.info("Training Size: %d\t DEV size: %d\t TEST size:%d"
-               % (len(TRAIN), len(DEV), len(TEST)))
-  print "stats about training data"
-  stats(TRAIN)
-  print "stats about dev data"
-  stats(DEV)
-  text = '\n'.join([', '.join([str(num) for num in stat]) for stat in results])
-  print '\n---------------------\n',text
 
+  logging.info("stats about training data")
+  stats(TRAIN)
+  logging.info("stats about dev data")
+  stats(DEV)
+  lambdas, dev_acc, train_acc, cfms, clfs = zip(*results)
+  reduced_results = zip(lambdas, dev_acc, train_acc)
+  text = '\n'.join([', '.join([str(num) for num in stat]) for stat in reduced_results])
+  logging.info("Results:")
+  logging.info('\n'+text)
+
+  max_index = dev_acc.index(max(dev_acc))
+  best_lambda = lambdas[max_index]
+  cfm = cfms[max_index]
+  logging.info("best lambda is %f", best_lambda)
+  logging.info("Confusion Matrix of the best classifier on the dec data:\n%s\n" % cfm)
+
+
+  test_fs = samples_featuresets('TEST_FS', TEST)
+  result = [clfs[max_index].classify(fs) for fs,label in test_fs]
+  gold = [label for fs,label in test_fs]
+  acc = len(filter(lambda (x,y): x==y, zip(result, gold)))/float(len(gold))
+  logging.info("Accuracy on test is %f", acc)
+  cm = nltk.ConfusionMatrix(gold, result)
+  cf_text = cm.pp(sort_by_count=True, show_percents=True, truncate=20)
+  logging.info("Confusion Matrix of the best classifier on the test data:\n%s\n" % cf_text)
+  
+  #This introduced a bug, where raw_coef are modified when they should not
+  logging.info('Important features\n%s\n', clfs[max_index].show_most_informative_features(dev_fs))
 
 if __name__ == "__main__":
   parser = OptionParser()
   parser.add_option("-f", "--file", dest="filename", help="Input file")
+  parser.add_option("-e", "--experiment", dest="exp", help="Experiment Class")
   parser.add_option("-l", "--log", dest="log", help="log verbosity level",
                     default="INFO")
   (options, args) = parser.parse_args()
 
   numeric_level = getattr(logging, options.log.upper(), None)
-  logging.basicConfig(level=numeric_level, format=LOG_FORMAT)
+  file_log = '.'.join([options.filename, options.exp, 'log'])
+  logging.basicConfig(level=numeric_level, format=LOG_FORMAT, filename=file_log)
   main(options, args)
