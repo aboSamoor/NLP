@@ -3,13 +3,14 @@
 
 """settings.py: A module that contain some settings."""
 
-PERCENTAGE = 10
+PERCENTAGE = 50
 
 TRAIN_FILE = "data/train.json.txt.pos." + str(PERCENTAGE)
 DEV_FILE = "data/dev.json.txt.pos." + str(PERCENTAGE)
 TEST_FILE = "data/test.json.txt.pos." + str(PERCENTAGE)
 CLEAN = True
 
+CACHE = False
 TRAIN = None
 DEV = None
 TEST = None

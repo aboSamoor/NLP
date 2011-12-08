@@ -123,7 +123,7 @@ def prune_data(samples):
   # clean data
   if CLEAN:
     new_samples = _map(clean_comment, new_samples)
-    open('clean_data.txt', 'w').write(to_string_samples(new_samples))
+#    open('clean_data.txt', 'w').write(to_string_samples(new_samples))
   return new_samples
 
 
@@ -170,8 +170,8 @@ class Serialized(object):
   """
 
   __CACHE = 'cache'
-  if not os.path.isdir('cache'):
-    os.mkdir(Serialized.__CACHE)
+  if not os.path.isdir(__CACHE):
+    os.mkdir(__CACHE)
 
   def __init__(self, func):
     self.func = func
@@ -184,14 +184,17 @@ class Serialized(object):
     data = None
     filename = self._path(name)
     try:
+      if not CACHE:
+        raise Exception
       fh = open(filename, 'r')
       data = load(fh)
       fh.close()
     except:
       data = self.func(*args)
-      fh = open(filename, 'w')
-      dump(data, fh)
-      fh.close()
+      if CACHE:
+        fh = open(filename, 'w')
+        dump(data, fh)
+        fh.close()
     return data
 
   def __get__(self, obj, objtype):
