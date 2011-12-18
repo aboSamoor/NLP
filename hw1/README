@@ -1,0 +1,207 @@
+Name: Rami AL-Rfou'
+SBU ID : 107906719
+email: ralrfou@cs.stonybrook.edu
+
+How to run:
+============
+./hw1.py -f convote_v1.1/data_stage_one/training_set/total.dat -t
+convote_v1.1/data_stage_one/test_set/total.dat -l DEBUG
+
+total.dat in a folder is a file which has the text of all the other files. This
+is made this way to make batch tagging more efficient.
+total.dat files were created by the following command.
+
+find . -name "*.txt" -exec cat {} >> total.dat \;
+
+Dependencies:
+=============
+1- Python: Python is the main language used to code the tasks needed.
+2- Java: Java environment should be available to run POS tagger.
+3- NLTK library is for the common NLP tasks. Version used is 2.0-rc1.
+3- Stanford POS tagger is used for POS tagging, it is called from the NLTK
+ interface. 09/14/2011 version is used.
+
+
+Architecture:
+=============
+(i) Document class is used as an interface to do common case tasks like:
+  1- Calculate POS tags over text.
+  2- Calculate Ngrams over text.
+  3- Tokenize the text into words and sentences.
+  4- dump partial results into json files.
+
+(ii) Document class was extended into Prepositions class that override the
+Document
+abstract methods to define a set of problems, a set of feature sets. And the
+categories of the classifier.
+
+(iii) Baseline1 extends the Prepositions and the Classifier NLTK interface to
+take
+advantage of both functionalities.
+
+(iv) Baseline2 extends Baseline and override the calssify function.
+
+Once the command is executed, the training and the testing sets will be
+generated.
+the classifiers will be trained and run over the testing set in the following
+order:
+1- Perceptron classifier.
+2- NaiveBayse classfiier.
+3- Baseline1 classifier
+4- Baseline2 classifier.
+
+Typical Log from running the system:
+
+[rmyeid@petra: hw1] $ time ./hw1.py -f
+convote_v1.1/data_stage_one/training_set/total.dat -t
+convote_v1.1/data_stage_one/test_set/total.dat -l DEBUG
+2011-10-02 22:57:13 INFO hw1.py: 140 processing started ...
+2011-10-02 22:57:15 INFO util.py: 136 POS tags are loaded from
+/home/rmyeid/code/hw1/convote_v1.1/data_stage_one/training_set/total.dat.pos.json
+2011-10-02 22:57:32 INFO hw1.py: 77 79490 Problems calculated for
+/home/rmyeid/code/hw1/convote_v1.1/data_stage_one/training_set/total.dat.
+2011-10-02 22:57:51 DEBUG util.py: 129
+/home/rmyeid/code/hw1/convote_v1.1/data_stage_one/training_set/total.dat.pset.json
+is saved.
+2011-10-02 22:57:52 INFO util.py: 92
+/home/rmyeid/code/hw1/convote_v1.1/data_stage_one/training_set/total.dat is
+read.
+2011-10-02 22:58:15 INFO util.py: 161 Ngram model of length 2 is calculated for
+/home/rmyeid/code/hw1/convote_v1.1/data_stage_one/training_set/total.dat.
+2011-10-02 22:58:24 INFO util.py: 161 Ngram model of length 3 is calculated for
+/home/rmyeid/code/hw1/convote_v1.1/data_stage_one/training_set/total.dat.
+2011-10-02 22:58:30 INFO hw1.py: 88 79490 labeled featureset is calculated for
+/home/rmyeid/code/hw1/convote_v1.1/data_stage_one/training_set/total.dat.
+2011-10-02 22:58:32 DEBUG util.py: 129
+/home/rmyeid/code/hw1/convote_v1.1/data_stage_one/training_set/total.dat.lfs.json
+is saved.
+2011-10-02 22:58:33 INFO perceptron.py: 103 The perceptron algorithm will be
+trained 10 times over the set with learning rate 0.001258
+2011-10-02 22:59:06 INFO perceptron.py: 110 Perceptron classfier is trained
+2011-10-02 22:59:06 DEBUG perceptron.py: 80 perceptron.json is saved.
+2011-10-02 22:59:08 INFO util.py: 136 POS tags are loaded from
+/home/rmyeid/code/hw1/convote_v1.1/data_stage_one/test_set/total.dat.pos.json
+2011-10-02 22:59:13 INFO hw1.py: 77 27085 Problems calculated for
+/home/rmyeid/code/hw1/convote_v1.1/data_stage_one/test_set/total.dat.
+2011-10-02 22:59:20 DEBUG util.py: 129
+/home/rmyeid/code/hw1/convote_v1.1/data_stage_one/test_set/total.dat.pset.json
+is saved.
+2011-10-02 22:59:20 INFO util.py: 92
+/home/rmyeid/code/hw1/convote_v1.1/data_stage_one/test_set/total.dat is read.
+2011-10-02 22:59:28 INFO util.py: 161 Ngram model of length 2 is calculated for
+/home/rmyeid/code/hw1/convote_v1.1/data_stage_one/test_set/total.dat.
+2011-10-02 22:59:33 INFO util.py: 161 Ngram model of length 3 is calculated for
+/home/rmyeid/code/hw1/convote_v1.1/data_stage_one/test_set/total.dat.
+2011-10-02 22:59:35 INFO hw1.py: 88 27085 labeled featureset is calculated for
+/home/rmyeid/code/hw1/convote_v1.1/data_stage_one/test_set/total.dat.
+2011-10-02 22:59:36 DEBUG util.py: 129
+/home/rmyeid/code/hw1/convote_v1.1/data_stage_one/test_set/total.dat.lfs.json is
+saved.
+2011-10-02 22:59:37 INFO hw1.py: 151 Accuracy of the Perceptron Classifier:
+0.763670
+2011-10-02 22:59:37 INFO hw1.py: 153 Training NaiveBayes classifier
+2011-10-02 22:59:41 INFO hw1.py: 156 Accuracy of the NaiveBayes Classifier:
+0.787668
+2011-10-02 22:59:41 INFO util.py: 92
+/home/rmyeid/code/hw1/convote_v1.1/data_stage_one/training_set/total.dat is
+read.
+2011-10-02 23:00:06 INFO util.py: 161 Ngram model of length 3 is calculated for
+/home/rmyeid/code/hw1/convote_v1.1/data_stage_one/training_set/total.dat.
+2011-10-02 23:00:07 INFO hw1.py: 159 Accuracy of the Baseline1: 0.211113
+2011-10-02 23:00:11 INFO util.py: 136 POS tags are loaded from
+/home/rmyeid/code/hw1/convote_v1.1/data_stage_one/training_set/total.dat.pos.json
+2011-10-02 23:00:18 INFO util.py: 161 Ngram model of length 3 is calculated for
+/home/rmyeid/code/hw1/convote_v1.1/data_stage_one/training_set/total.dat.tag.
+2011-10-02 23:00:19 INFO hw1.py: 162 Accuracy of the Baseline2: 0.138158
+
+
+
+Perceptron implementation notes:
+================================
+1- The learning rate was calculated to be 100/(size of training set). This
+control
+the weights not to inflate by the increase of the training set size.
+
+2- The perceptron is trained 10 time over the training set. i.e, the classifier
+is trained for 10 EPOCHS.
+
+3- The featureset is implemented as a list/vector instead of a matrix as most of
+the features are sparse and appear rarley.
+
+4- To avoid oscillating between EPOCHS the featureset is shuffled between
+epochs. 
+
+5- The Perceptron class extends the NLTK ClassifierI interface. Which makes it
+easy
+to call many tasks available in NLTK for classifiers, for example, accuracy.
+
+
+
+
+Experiments:
+===========
+
+
+Baselines:
+==========
+1- Decide which preposition depending on which preposition will make the trigam,
+which the preposition is in its middle, most probable.
+For example, in the statement of 'instead ____ taking'. We calculate the
+probability
+of each
+P('instead of taking')
+P('instead on taking')
+P('instead in taking')
+3gram language model is calculated over the training set to calculate the
+probability.
+
+2- As the same with previous approach but instead of reporting the words before
+and after the preposition, we report their tags.
+P('JJ of NN')
+P('JJ on NN')
+P('JJ in NN')
+3gram language model is calculated over the training set to calculate the
+probability.
+
+
+Ngram Smoothing:
+================
+Turing discounting method is used as a smoothing technique to deal with the
+unseen
+ words.
+
+
+Features selection:
+===================
+The most influencing features are the words before and after the preposition.
+The following is a table of the results of the different experiments that were
+done:
+
+1- feature set: {previous word, next word}, accuracy: 55-65%
+2- feature set: {previous tag, next tag, P(bigram)}, accuracy 48%-57%.
+3- feature set: {previous word, next word, previous tag, next tag, P(bigram),
+ P(trigram), first character of the next word}, accuracy: 74-78%.
+
+Performance:
+============
+The best featureset vector, which is number 3, is used for all the classifiers.
+1- The perceptron classifier accuracy varies between 74-78%.
+2- NaiveBayes classifier accuracy varies between 76%-79%.
+3- Baseline1 classifier accuracy 20-21%.
+4- Baseline2 classifier accuracy is 13-14%.
+
+Analysis:
+=========
+Analysis shows that NaiveBayes classifier which is a generative calssifier can
+achieve good performance without recording more than the trigram that the
+preposition
+is in its middle. However, The perceptron algorithm, which is a discriminative
+algorithm takes more features to achieve comparable results. Adding more
+features
+does not always help and proper regularization and scaling should be done to
+avoid
+dominating features. In the preposition selection task, it was clear that most
+the
+errors come from the situations that the words after and before the preposition
+are so common, like the articles. Another source of errors are the phrasal
+verbs.
