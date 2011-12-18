@@ -28,6 +28,10 @@ from sklearn.feature_selection import RFE
 from math import log
 from settings import *
 from re import compile
+from pybrain.datasets import SupervisedDataSet, ClassificationDataSet
+from pybrain.tools.shortcuts import buildNetwork
+from pybrain.supervised.trainers import BackpropTrainer
+from pybrain.structure import SoftmaxLayer
 
 __author__ = "Rami Al-Rfou"
 __email__ = "rmyeid@gmail.com"
@@ -309,6 +313,53 @@ class Scikit(MultiClassifierI):
       fx_ranking.append((ranking[i], self._fx[i]))
     self._clf.fit(X, y)
     return '\n'.join(['\t'.join([str(y),str(x)]) for x,y in sorted(fx_ranking)])
+
+
+class Pybrain(MultiClassifierI):
+  def __init__(self):
+    self._ds = None
+    self._net = None
+    self._trainer = None
+    labels = self.labels()
+    self._map = dict(zip(labels, range(len(labels))))
+    self._rmap = dict(zip(range(len(labels)), labels))
+
+  def samples_to_Xy(self, samples):
+    if not self._fx:
+      self._fx = samples[0][0].keys()
+    converter = lambda fset:[fset[l] for l in self._fx]
+    fsets, labels = zip(*samples)
+    X = map(converter, fsets)
+    return zip(X, labels) 
+    
+    
+  def train(self, samples):
+    self._fx = samples[0][0].keys()
+    self._ds = ClassificationDataSet(len(self._fx))
+    for sample in self.samples_to_Xy(samples):
+      fvec, label = sample
+      self._ds.addSample(fvec, [self._map[label]])
+    self._ds._convertToOneOfMany()
+    self._net = buildNetwork(self._ds.indim,
+                            self._ds.outdim, 
+                            self._ds.outdim, 
+                            self._ds.outdim, bias=True, outclass=SoftmaxLayer)
+    self._trainer = BackpropTrainer(self._net, self._ds, verbose=True,
+                                    )
+    error = self._trainer.trainEpochs(40)
+#    logging.info('Error: %f' % error)
+    return self
+    
+  def labels(self):
+    return LANGUAGES
+
+  def batch_classify(self, samples):
+    ds = ClassificationDataSet(len(self._fx))
+    for sample in samples:
+      fvec = [sample[l] for l in self._fx]
+      ds.addSample(fvec, [0])
+    results = self._trainer.testOnClassData(ds)
+    return [self._rmap[r] for r in results]
       
       
 def similarity(freqdist, sequence, n):
@@ -328,14 +379,18 @@ def comment_similarity(model, comment, n):
   words_similarity = 0.0
   tags_similarity = 0.0
   char_similarity = 0.0
+  w_size_similarity = 0.0
   size = float(len(comment))
   for statement in comment:
     words,tags = zip(*statement)
+    sizes = [len(word) for word in words]
     statement_text = ' '.join(words)
     char_similarity += similarity(model["chars"], statement_text, n)
     words_similarity += similarity(model["words"], words, n)
     tags_similarity += similarity(model["tags"], tags, n)
-  return [value/size for value in [words_similarity, tags_similarity, char_similarity]]
+    w_size_similarity += similarity(model["w_sizes"], sizes, n)
+  return [value/size for value in 
+          [words_similarity, tags_similarity, char_similarity, w_size_similarity]]
     
 
 def comment_perplexity(comment, model):
@@ -380,42 +435,48 @@ def language_distribution(n, training):
   for language in LANGUAGES:
     language_dist[language] = {"words": dict(zip(range(1, n+1), [FreqDist() for i in range(1, n+1)])),
                                "tags": dict(zip(range(1, n+1), [FreqDist() for i in range(1, n+1)])),
-                               "chars": dict(zip(range(1, n+1), [FreqDist() for i in range(1, n+1)]))}
+                               "chars": dict(zip(range(1, n+1), [FreqDist() for i in range(1, n+1)])),
+                               "w_sizes": dict(zip(range(1, n+1), [FreqDist() for i in range(1, n+1)]))}
   for comment, language in training:
     for statement in comment:
       words, tags = zip(*statement)
+      sizes = [len(word) for word in words]
       statement_text = ' '.join(words)
       for i in range(1, n+1):
         language_dist[language]["words"][i].update(nltk.ngrams(words, i))
         language_dist[language]["tags"][i].update(nltk.ngrams(tags, i))
         language_dist[language]["chars"][i].update(nltk.ngrams(statement_text, i))
+        language_dist[language]["w_sizes"][i].update(nltk.ngrams(sizes, i))
   return language_dist
 
 
 def featureset(sample):
   comment, label = sample
   features = {}
-  tags = map(lambda statement: map(lambda (w,t):t, statement), comment)
-  words = map(lambda statement: map(lambda (w,t):w, statement), comment)
-  words = sum(words, [])
-  tags = sum(tags, [])
-  size_= sum([len(word) for word in words])
-  features['stmt_len'] = len(words)/float(len(comment))
-  features['word_len'] = size_/float(len(words))
-  features['size'] = size_
+#  tags = map(lambda statement: map(lambda (w,t):t, statement), comment)
+#  words = map(lambda statement: map(lambda (w,t):w, statement), comment)
+#  words = sum(words, [])
+#  tags = sum(tags, [])
+#  size_= sum([len(word) for word in words])
+#  features['stmt_len'] = len(words)/float(len(comment))
+#  features['word_len'] = size_/float(len(words))
+#  features['size'] = size_
 #  tags_dist = FreqDist(sum(tags, []))
 #  for tag in TAGS:
 #    features[tag] = tags_dist.get(tag, 0)
-  dist = FreqDist([word.lower() for word in words])
-  for word in EN_STOPWORDS:
-    features[word] = dist.get(word, 0)/float(len(words))
+#  dist = FreqDist([word.lower() for word in words])
+#  num_stop_words = float(sum([dist.get(word, 0) for word in EN_STOPWORDS]))
+#  features['prob_stop_words'] = num_stop_words/len(words)
+#  for word in EN_STOPWORDS:
+#    features[word] = dist.get(word, 0)/float(len(words))
   features['alwayson'] = 1.0
   for language in LANGUAGES:
     for i in range(1,n+1):
-      word_sim, tag_sim, char_sim = comment_similarity(GRAMS[language], comment, i)
+      word_sim, tag_sim, char_sim, w_s_sim = comment_similarity(GRAMS[language], comment, i)
       features['w_sim_%d_%s' % (i, language)] = word_sim
       features['t_sim_%d_%s' % (i, language)] = tag_sim
       features['c_sim_%d_%s' % (i, language)] = char_sim
+      features['s_sim_%d_%s' % (i, language)] = w_s_sim
   return (features, label)
 
 
@@ -485,6 +546,7 @@ def get_classifier(samples_fs, lambda_=1):
 #  clf = MaxentClassifier.train(samples_fs, 'MEGAM',
 #                                  gaussian_prior_sigma=sigma_)
   clf = Scikit(lambda_).train(samples_fs)
+#  clf = Pybrain().train(samples_fs)
   return clf
 
 
@@ -500,8 +562,8 @@ def main(options, args):
 
   global TRAIN, DEV, TEST, MAP, GRAMS, LANGUAGES, TAGS, __train_fs, __dev_fs, __test_fs
 
-  exps_MAPS ={'g': MAP_GROUPS, 'p': MAP_POPULAR, 'f': MAP_FOREIGN}
-  MAP = exps_MAPS[options.exp]  
+  exps_MAPS ={'g': MAP_GROUPS, 'p': MAP_POPULAR, 'f': MAP_FOREIGN, 'n': MAP_POP_NoEN}
+  MAP = exps_MAPS[options.exp]
   logging.info("Eperiment mode is %s" % options.exp)
 
   TRAIN = json.load(open(TRAIN_FILE, 'r'))
@@ -582,7 +644,7 @@ def main(options, args):
   logging.info("Confusion Matrix of the best classifier on the test data:\n%s\n" % cf_text)
   
   #This introduced a bug, where raw_coef are modified when they should not
-  logging.info('Important features\n%s\n', clfs[max_index].show_most_informative_features(dev_fs))
+#  logging.info('Important features\n%s\n', clfs[max_index].show_most_informative_features(dev_fs))
 
 if __name__ == "__main__":
   parser = OptionParser()
@@ -591,7 +653,9 @@ if __name__ == "__main__":
   parser.add_option("-l", "--log", dest="log", help="log verbosity level",
                     default="INFO")
   (options, args) = parser.parse_args()
-
+  root = logging.getLogger()
+  while root.handlers:
+    root.removeHandler(root.handlers[0])
   numeric_level = getattr(logging, options.log.upper(), None)
   file_log = '.'.join([options.filename, options.exp, 'log'])
   logging.basicConfig(level=numeric_level, format=LOG_FORMAT, filename=file_log)

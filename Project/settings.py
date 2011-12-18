@@ -3,14 +3,14 @@
 
 """settings.py: A module that contain some settings."""
 
-PERCENTAGE = 50
+PERCENTAGE = 10
 
 TRAIN_FILE = "data/train.json.txt.pos." + str(PERCENTAGE)
 DEV_FILE = "data/dev.json.txt.pos." + str(PERCENTAGE)
 TEST_FILE = "data/test.json.txt.pos." + str(PERCENTAGE)
 CLEAN = True
 
-CACHE = False
+CACHE = True 
 TRAIN = None
 DEV = None
 TEST = None
@@ -70,6 +70,14 @@ MAP_GROUPS ={
 
 MAP_POPULAR = {
 'User_en-us':  'EN-US',
+'User_de-N': 'German',
+'User_es-N': 'Spanish',
+'User_fr-N': 'French',
+'User_ru-N': 'Russian',
+'User_nl-N': 'Dutch',
+}
+
+MAP_POP_NoEN = {
 'User_de-N': 'German',
 'User_es-N': 'Spanish',
 'User_fr-N': 'French',
