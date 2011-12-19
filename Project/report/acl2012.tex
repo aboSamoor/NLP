@@ -42,9 +42,7 @@
 \section{Related Work}
 %Chen's part
 %Mentions what people did, and how our work is different and original.
-  The first work related with native language identification is that of Koppel et al. (2005), in which they tried profiling anonymous authors with their native languages. Totally five different groups of English authors (whose native languages are Russian, Bulgarian, French, and Spanish) were picked from the first version of {\em International Corpus of Learner English} (ICLE) in their experiments. By applying a combined feature sets, including function words, character n-grams, part-of-speech bi-grams and spelling mistakes, they gained an accuracy of 65\% if considered style features only. These results suggested that syntactic features are valuable when trying to categorize authors by their native languages.  
-  Similar work was done by Tsur and Rappoport (2007). They focused on the relationships between choice of words in second language writing and the frequency of native language syllables, also known as the phonology of native languages. And Estival et al. (2007). studied a wide range of lexical and document structure features in their native laguages classification task. But either of these two mentioned the usefulness of syntacitc features for the task of native language detection.
-   
+
 
 \section{Wikipedia}
 %Explain why wikipedia is an awesome source
@@ -94,7 +92,7 @@ We parsed the talk pages with the \verb+namespace=1+, they represents x\% of the
 
 As we have large number of comments and users and as we believe the data we have is still noisy. We applied the following filtering mechanisms:
 \begin{itemize}
-\item We picked the users of the most popular 20 native languages.
+\item We picked the users of the most popular 19 native languages.
 \item We picked out of the English native speakers the users who specified the EN-US as their native language only to avoid users who are so skilled in English but are not living in English speaking countries.
 \item We excluded the users who specified more than one native language out of the picked native languages to avoid unrealistic scenarios where users claim to be native in more than two languages.
 \end{itemize}
@@ -114,16 +112,36 @@ The following experiments are conducted under the following conditions:
 \end{itemize}
 
 \subsection{Features}
-The comments of training set is grouped by class and the following language models are calculated for each class:
+The comments of training set is grouped by class and the following frequency distribution are calculated for each class:
 \begin{itemize}
-\item
+\item 1-4 grams over the comments words.
+\item 1-4 grams over the characters of the words of the comments.
+\item 1-4 grams over the part of speech tags.
 \end{itemize}
 
-We calculated the 1-4 grams over the words
+For each comment ($C$) similarity measurements($Sim$) are calculated against each n-gram frequency distribution ($f(n)$) according to the following equations:
 
+\[
+  count(x, f, n) = \left\{ 
+  \begin{array}{l l}
+    FreqDistCount(x, f, n), & \\\quad \text{if $x$ is in $f(n)$}\\
+    1,&\\\quad \text{if $x$ is not seen before}\\
+  \end{array} \right.
+\]
+\[
+  Sim(C,f,n) = \sum_{x \in ngrams(C,n)} \log_2 (count(x,f,n))
+\]
+
+So if our problem has six labels this will generate $6*3*4 = 72$ features.
+
+Other features also included the relative frequency of each of the stop words to the size of the comments. The  125 stop words are extracted from the NLTK stop words corpus. Moreover, the average size of words and the average size of sentences is also added.
 
 \subsection{Popular Languages Experiment}
 %Explain the experiment and the results
+The most popular six languages: US-EN, German, Spanish, French, Russian and Dutch  are chosen to train a classifier to detect the user's native language. Figure \ref{pop_cfm} shows the confusion matrix of the experiment that is done using 100\% of data set, about 150K comment. We can see clearly that the Russian users are the easiest to identify. Moreover, the classifier is the most confused distinguishing the German and the Dutch users with error $>2.0\%$ and to a less degree between (EN-US, French) and (EN-US, Spanish). These numbers confirm a basic intuition that users who have geographical proximity will have more borrowed words and grammars between their native languages which will affect their writing styles in English.
+
+
+
 
 \begin{figure}[htp]
 \centering
@@ -131,6 +149,9 @@ We calculated the 1-4 grams over the words
 \caption{Popular Languages experiment confusion matrix}
 \label{pop_cfm}
 \end{figure}
+
+Figure \ref{pop_lc} shows that the best accuracy that the classifier achieved is 50.275\%. The learning curves shows a typical over fitting situation where the more data you have the better the classifier can achieve. And here the size of data that can be extracted from wikipedia plays a significant role to boosts the accuracy from 37\% to over 50\%. The growth of the curve is similar to $\sqrt{x}$ curve which suggests the importance of the increase in the coverage of unique words that the frequency distribution which grows also with the same rate.
+
 
 \begin{figure}[htp]
 \centering
@@ -141,12 +162,31 @@ We calculated the 1-4 grams over the words
 		
 \subsection{Languages Families Experiment}
 %Explain the experiment and the results
+
+The confusion in classifying Dutch and German users suggests that there is a similarity between groups of languages. Referring to the linguistics research history of classifying the languages into families according to similar features and development history, this experiment tries to put such grouping under the microscope. 17 languages are grouped into 5 families as the following:
+\begin{itemize}
+\item North Germanic\\
+German, Dutch, Norwegian, Swedish, Danish
+\item Roman\\
+Spanish, French, Portuguese, Italian
+\item Uralic \\
+Russian, Polish, Finnish, Hungarian
+\item Asian\\
+Chinese, Japanese, Korean
+\item English
+\end{itemize}
+
+
+Figure \ref{fam_cfm} shows the that the Asian native speakers has a clear style of writing English that is easy to detect relatively. Moreover, as English belongs to the Anglic language family which also belongs to the West Germanic family of languages, we can see that clearly in terms of the high error rates $>3.0\%$. Other trends can be explained according to the users geographical proximity as in cases of (Uralic, North Germanic), (North Germanic, Roman).
+
 \begin{figure}[htp]
 \centering
 \includegraphics[scale=0.45]{family_cfm.png}
 \caption{Languages families experiment confusion matrix}
 \label{fam_cfm}
 \end{figure}
+
+The learning curves of this experiment are similar to the ones from the previous experiment with the exception that the best accuracy that is achieved is less with $47.542\%$ when 100\% of the data is used. That could be explained when we notice that the total number of comments that are used in this experiment is 82K which around 50\% of the data used in the previous experiment. With 50\% of the data in the popular languages experiment the classifier achieved similar performance. We could not add more comments because of the constraints all the classed should have the same number of comments.
 
 \begin{figure}[htp]
 \centering
@@ -157,6 +197,9 @@ We calculated the 1-4 grams over the words
 
 \subsection{Native vs Non Native Experiment}
 %Explain the experiment and the results
+
+
+
 \begin{figure}[htp]
 \centering
 \includegraphics[scale=0.45]{native_cfm.png}
