@@ -454,21 +454,21 @@ def featureset(sample):
   comment, label = sample
   features = {}
 #  tags = map(lambda statement: map(lambda (w,t):t, statement), comment)
-#  words = map(lambda statement: map(lambda (w,t):w, statement), comment)
-#  words = sum(words, [])
+  words = map(lambda statement: map(lambda (w,t):w, statement), comment)
+  words = sum(words, [])
 #  tags = sum(tags, [])
-#  size_= sum([len(word) for word in words])
-#  features['stmt_len'] = len(words)/float(len(comment))
-#  features['word_len'] = size_/float(len(words))
-#  features['size'] = size_
+  size_= sum([len(word) for word in words])
+  features['stmt_len'] = len(words)/float(len(comment))
+  features['word_len'] = size_/float(len(words))
+  features['size'] = size_
 #  tags_dist = FreqDist(sum(tags, []))
 #  for tag in TAGS:
 #    features[tag] = tags_dist.get(tag, 0)
-#  dist = FreqDist([word.lower() for word in words])
+  dist = FreqDist([word.lower() for word in words])
 #  num_stop_words = float(sum([dist.get(word, 0) for word in EN_STOPWORDS]))
 #  features['prob_stop_words'] = num_stop_words/len(words)
-#  for word in EN_STOPWORDS:
-#    features[word] = dist.get(word, 0)/float(len(words))
+  for word in EN_STOPWORDS:
+    features[word] = dist.get(word, 0)/float(len(words))
   features['alwayson'] = 1.0
   for language in LANGUAGES:
     for i in range(1,n+1):
@@ -476,7 +476,7 @@ def featureset(sample):
       features['w_sim_%d_%s' % (i, language)] = word_sim
       features['t_sim_%d_%s' % (i, language)] = tag_sim
       features['c_sim_%d_%s' % (i, language)] = char_sim
-      features['s_sim_%d_%s' % (i, language)] = w_s_sim
+#     features['s_sim_%d_%s' % (i, language)] = w_s_sim
   return (features, label)
 
 
@@ -562,7 +562,8 @@ def main(options, args):
 
   global TRAIN, DEV, TEST, MAP, GRAMS, LANGUAGES, TAGS, __train_fs, __dev_fs, __test_fs
 
-  exps_MAPS ={'g': MAP_GROUPS, 'p': MAP_POPULAR, 'f': MAP_FOREIGN, 'n': MAP_POP_NoEN}
+  exps_MAPS ={'g': MAP_GROUPS, 'p': MAP_POPULAR, 'f': MAP_FOREIGN,
+              'n':MAP_POP_NoEN, 'a': MAP_ALL}
   MAP = exps_MAPS[options.exp]
   logging.info("Eperiment mode is %s" % options.exp)
 
