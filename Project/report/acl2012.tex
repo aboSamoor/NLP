@@ -36,8 +36,19 @@
 \end{abstract}
 
 
+The paper presents the first attempt, up to our knowledge, to classify English writing styles on this scale and with the challenge of classifying day to day language written by writers with different backgrounds covering various areas of topics. The paper proposes simple machine learning algorithms and simple to generate features to solve hard problems. Relying on the scale of the data available from large sources of knowledge like Wikipedia. We believe such sources of data are crucial to generate robust solutions for the web with high accuracy and easy to deploy in practice. The paper achieves 74\% accuracy classifying native versus non native speakers writing styles.
+
+Moreover, the paper shows some interesting observations on the similarity between different languages measured by the similarity of their users English writing styles. This technique could be used to show some well known facts about languages as in grouping them into families, which our experiments support.
+
 \section{Introduction}
 %Rami's Part
+The internet nowadays is more diverse than any time before, with the introduction of social networks the majority of users are not any more native English speakers. This puts more challenges on the services providers to accommodate the English content to the new users. This paper tackles the challenge of identifying the native language of the user from their writing styles. We believe this task as a first step will be crucial in the development of many useful applications.
+
+Wikipedia is well known source for knowledge. Recently, it is used extensively to help in solving different information retrieval tasks especially the ones that involves semantic aspects. The use of wikipedia can be expanded to help the common NLP tools to perform better with the help of the diversity of topics and authors of wikipedia pages. Which will help in the data sparsity problem. The sustained growth of the content of wikipedia can bring performance gains with no much additional costs.
+
+The detection of the writer's native language can be helpful in application that targets new learners of English as a second language. Moreover, it could be adapted to transcribed text to help better voice recognition application when dealing with the non native speakers accents.
+
+
 
 \section{Related Work}
 %Chen's part
@@ -99,7 +110,7 @@ We parsed the talk pages with the \verb+namespace=1+, they represents x\% of the
 
 As we have large number of comments and users and as we believe the data we have is still noisy. We applied the following filtering mechanisms:
 \begin{itemize}
-\item We picked the users of the most popular 20 native languages.
+\item We picked the users of the most popular 19 native languages.
 \item We picked out of the English native speakers the users who specified the EN-US as their native language only to avoid users who are so skilled in English but are not living in English speaking countries.
 \item We excluded the users who specified more than one native language out of the picked native languages to avoid unrealistic scenarios where users claim to be native in more than two languages.
 \end{itemize}
@@ -119,16 +130,36 @@ The following experiments are conducted under the following conditions:
 \end{itemize}
 
 \subsection{Features}
-The comments of training set is grouped by class and the following language models are calculated for each class:
+The comments of training set is grouped by class and the following frequency distribution are calculated for each class:
 \begin{itemize}
-\item
+\item 1-4 grams over the comments words.
+\item 1-4 grams over the characters of the words of the comments.
+\item 1-4 grams over the part of speech tags.
 \end{itemize}
 
-We calculated the 1-4 grams over the words
+For each comment ($C$) similarity measurements($Sim$) are calculated against each n-gram frequency distribution ($f(n)$) according to the following equations:
 
+\[
+  count(x, f, n) = \left\{ 
+  \begin{array}{l l}
+    FreqDistCount(x, f, n), & \\\quad \text{if $x$ is in $f(n)$}\\
+    1,&\\\quad \text{if $x$ is not seen before}\\
+  \end{array} \right.
+\]
+\[
+  Sim(C,f,n) = \sum_{x \in ngrams(C,n)} \log_2 (count(x,f,n))
+\]
+
+So if our problem has six labels this will generate $6*3*4 = 72$ features.
+
+Other features also included the relative frequency of each of the stop words to the size of the comments. The  125 stop words are extracted from the NLTK stop words corpus. Moreover, the average size of words and the average size of sentences is also added.
 
 \subsection{Popular Languages Experiment}
 %Explain the experiment and the results
+The most popular six languages: US-EN, German, Spanish, French, Russian and Dutch  are chosen to train a classifier to detect the user's native language. Figure \ref{pop_cfm} shows the confusion matrix of the experiment that is done using 100\% of data set, about 150K comment. We can see clearly that the Russian users are the easiest to identify. Moreover, the classifier is the most confused distinguishing the German and the Dutch users with error $>2.0\%$ and to a less degree between (EN-US, French) and (EN-US, Spanish). These numbers confirm a basic intuition that users who have geographical proximity will have more borrowed words and grammars between their native languages which will affect their writing styles in English.
+
+
+
 
 \begin{figure}[htp]
 \centering
@@ -136,6 +167,9 @@ We calculated the 1-4 grams over the words
 \caption{Popular Languages experiment confusion matrix}
 \label{pop_cfm}
 \end{figure}
+
+Figure \ref{pop_lc} shows that the best accuracy that the classifier achieved is 50.275\%. The learning curves shows a typical over fitting situation where the more data you have the better the classifier can achieve. And here the size of data that can be extracted from wikipedia plays a significant role to boosts the accuracy from 37\% to over 50\%. The growth of the curve is similar to $\sqrt{x}$ curve which suggests the importance of the increase in the coverage of unique words that the frequency distribution which grows also with the same rate.
+
 
 \begin{figure}[htp]
 \centering
@@ -146,12 +180,31 @@ We calculated the 1-4 grams over the words
 		
 \subsection{Languages Families Experiment}
 %Explain the experiment and the results
+
+The confusion in classifying Dutch and German users suggests that there is a similarity between groups of languages. Referring to the linguistics research history of classifying the languages into families according to similar features and development history, this experiment tries to put such grouping under the microscope. 17 languages are grouped into 5 families as the following:
+\begin{itemize}
+\item North Germanic\\
+German, Dutch, Norwegian, Swedish, Danish
+\item Roman\\
+Spanish, French, Portuguese, Italian
+\item Uralic \\
+Russian, Polish, Finnish, Hungarian
+\item Asian\\
+Chinese, Japanese, Korean
+\item English
+\end{itemize}
+
+
+Figure \ref{fam_cfm} shows the that the Asian native speakers has a clear style of writing English that is easy to detect relatively. Moreover, as English belongs to the Anglic language family which also belongs to the West Germanic family of languages, we can see that clearly in terms of the high error rates $>3.0\%$. Other trends can be explained according to the users geographical proximity as in cases of (Uralic, North Germanic), (North Germanic, Roman).
+
 \begin{figure}[htp]
 \centering
 \includegraphics[scale=0.45]{family_cfm.png}
 \caption{Languages families experiment confusion matrix}
 \label{fam_cfm}
 \end{figure}
+
+The learning curves of this experiment are similar to the ones from the previous experiment with the exception that the best accuracy that is achieved is less with $47.542\%$ when 100\% of the data is used. That could be explained when we notice that the total number of comments that are used in this experiment is 82K which around 50\% of the data used in the previous experiment. With 50\% of the data in the popular languages experiment the classifier achieved similar performance. We could not add more comments because of the constraints all the classed should have the same number of comments.
 
 \begin{figure}[htp]
 \centering
@@ -162,6 +215,9 @@ We calculated the 1-4 grams over the words
 
 \subsection{Native vs Non Native Experiment}
 %Explain the experiment and the results
+In this experiment all the non native English speakers were labelled as Non native. Figure \ref{non_cfm} and figure \ref{non_lc} shows that the classifier could achieve $74.449\%$ accuracy using around 322K comment divided between training, development and testing sets. Such high accuracy makes the classifier able to be deployed for practical usages.
+
+
 \begin{figure}[htp]
 \centering
 \includegraphics[scale=0.45]{native_cfm.png}
@@ -249,9 +305,22 @@ With Both: 31.3\%
 \section{Conclusions}
 %Chen's Part
 
-\section*{Acknowledgments}
+
+\section{Future Work}
+%Chen+Rami
+As our results shows promising applications and trends using Wikipedia data to solve hard problems in robust means, we are looking to investigate the effects of adding the wikipedia diffs, especially the non minor ones, as another source of user contributions. Moreover, the minimum size of the comments affects the performance of our classifiers, the relation between the quality of the data used and the accuracy of the classification is another interesting aspect.
+
+The languages families experiments suggest the usefulness of using the English writing styles to define the similarities between different languages. This could lead to an interesting explanations and/or observations regarding the origins of some languages as Korean language which stays till a mysterious topic.
+
+Another direction is to solve the over fitting problem in our learning algorithms by applying smarter feature selection and adding more distinguishing features.
+
+
+
+\section*{Acknowledgements}
 %Chen's Part
 %We should thank Prof. Skiena for the resources he gave us.
+We would like to thank Steven Skiena for the discussion and the advice. This work will not be available without the computing resources offered by his lab. We are also indebted to the NLTK and the Sklearn teams for producing excellent NLP and machine learning resources.
+
 
 \begin{thebibliography}{}
 
