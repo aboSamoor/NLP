@@ -124,7 +124,7 @@ The following experiments are conducted under the following conditions:
 \item The accepted comments has to have at least 20 tokens to avoid short and non meaningful comments.
 \item Proper nouns are replaced by their tags to avoid bias toward topics.
 \item Non ascii characters are replaced by a special character to avoid bias foreign languages usage in the comments.
-\item The classifier has balanced number of samples for each its classes.
+\item The classifier has balanced number of comments for each its classes. Therefore, the two baseline classifiers; the most common label and the random classifier will have an accuracy of 1/number of classes.
 \item Logistic Regression algorithm is used to for the classification task.
 \item The data set is split to 70\% training set, 10\% development set and 20\% testing set.
 \end{itemize}
@@ -150,9 +150,9 @@ For each comment ($C$) similarity measurements($Sim$) are calculated against eac
   Sim(C,f,n) = \sum_{x \in ngrams(C,n)} \log_2 (count(x,f,n))
 \]
 
-So if our problem has six labels this will generate $6*3*4 = 72$ features.
+So if our problem has six classes this will generate $6*3*4 = 72$ features.
 
-Other features also included the relative frequency of each of the stop words to the size of the comments. The  125 stop words are extracted from the NLTK stop words corpus. Moreover, the average size of words and the average size of sentences is also added.
+Other features also included the relative frequency of each of the stop words to the size of the comments. The  125 stop words are extracted from the NLTK stop words corpus. Moreover, the average size of words and the average number  of sentences is also added.
 
 \subsection{Popular Languages Experiment}
 %Explain the experiment and the results
@@ -204,7 +204,7 @@ Figure \ref{fam_cfm} shows the that the Asian native speakers has a clear style 
 \label{fam_cfm}
 \end{figure}
 
-The learning curves of this experiment are similar to the ones from the previous experiment with the exception that the best accuracy that is achieved is less with $47.542\%$ when 100\% of the data is used. That could be explained when we notice that the total number of comments that are used in this experiment is 82K which around 50\% of the data used in the previous experiment. With 50\% of the data in the popular languages experiment the classifier achieved similar performance. We could not add more comments because of the constraints all the classed should have the same number of comments.
+The learning curves of this experiment are similar to the ones from the previous experiment with the exception that the best accuracy that is achieved is less with $47.542\%$ when 100\% of the data is used. That could be explained when we notice that the total number of comments that are used in this experiment is 82K which around 50\% of the data used in the previous experiment. With 50\% of the data in the popular languages experiment the classifier achieved similar performance. We could not add more comments because of the constraints that all the classes should have the same number of comments.
 
 \begin{figure}[htp]
 \centering
