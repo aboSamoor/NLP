@@ -49,7 +49,7 @@ Similar work was done by \newcite {Tsur:2007}. They focused on the relationships
 
 \newcite {Wong:2009} replicated the work of \newcite {Koppel:2005} and digged more in the field of syntactic stuctures. They experimented on three selected syntactic errors, which are commonly observed in non-native English Users, including subject-verb disagreement, mismatch of noun-number pairs and wrong usage of determiners and the best overall accuracy was 73.71\% on the second version of ICLE across seven languages. What's more, \newcite {Wong:2011} continued their works in native language detection and focused more on the influence of syntactic structures, specifically parsing trees. They tried to exploiting the parsing structures by applying Standford parsers and C\&J parsers with different parameters to certain corpus, and capture the number of usages of some distinguishable rules. Their results and observations suggested that the syntactic structures would be supportive in detecting native languages and improving the performance of existing classifiers.
 
-Different from previous works mentioned above, our task runs on a totally different platform--wikipedia. Our goal is to find out the influence of one's native languages on the style of his/her writings under the circumstance of talking and discussion. With the help of huge amount of available data, we can try exploring the statistics features of a certain languages using similar features in \newcite {Koppel:2005} and \newcite {Wong:2011}, as well as the distribution of part-of-speech n-grams and word n-grams.      
+Different from previous works mentioned above, our task runs on a totally different platform--wikipedia. Our goal is to find out the influence of one's native languages on the style of his/her writings under the circumstance of talking and discussion. With the help of huge amount of available data, we can try exploring the statistics features of a certain languages using similar features in \newcite {Koppel:2005} and \newcite {Wong:2011}, as well as the distribution of part-of-speech(PoS) n-grams and word n-grams.      
 
 \section{Wikipedia}
 %Explain why wikipedia is an awesome source
@@ -178,6 +178,72 @@ We calculated the 1-4 grams over the words
 
 \section{Writing Styles}
 %Chen's part
+Another type of Experiment focuses on the usage of PoS n-grams, trying to distinguish users by comparing the similarity of the PoS-ngrams distribution with a candidate language. We use the same definition of "similarity" and build a 20-classifier based on the whole training data (524 MB). After training our language model, The accuracy was around 95\% on training data.
+
+The two baselines we selected are: Baseline-Max and Baseline-Random. Where in Baseline-Max we simply put each user into the category of native US English speaker since this class has the largest size with the
+probability of about 34\%. And in Baseline-Random, we choose randomly from 20 candidate languages. The expectation of accuracy should be 5\%.
+
+Since there exist some PoS-ngrams that might never appear in the training data, which means we have not seen such PoS-ngram before in any of the candidate category. We simply define these comments as "zero comments"--it is not precise to measure the value of these unseen PoS n-grams and we should put it into the category of native US English speaker to maximize the probability of correctness. Also, it sounds not reasonable if we consider comments that are too short. So we first try on comments that has more than 100 PoS n-grams, which means the comment has more than (100+n-1) tokens.
+
+\begin{table}[h]
+\begin{center}
+\begin{tabular}{|l|l|l|l|l|}
+\hline & \bf Overall Accuracy & \bf Non-zero Accuracy & \bf number of Comments & \bf numer of Zero Comments \\ \hline
+4-grams & 35.47\% & 37.54\%  & 13067 & 8196 \\
+tri-grams & 25.99\% & 25.96\% & 13209 & 13162 \\
+bi-grams & 15.77\% & 15.77\%  & 13375 & 13375\\
+uni-grams & 9.93\% & 9.93\%  & 13569 & 13569 \\
+baseline-max & 34.03\% & 34.01\% & 13067 & 13067 \\
+baseline-random & 5.00\% & 4.96\% & 13067 & 13067 \\
+bag-of-words & 33.98\% N/A & 13569 & 0 \\
+\hline
+\end{tabular}
+\end{center}
+\caption{\label{font-table} Result of Different PoS n-grams. }
+\end{table}
+
+It is clear from the table that the higher level of PoS n-grams, the higher the accuracy. But The experiment on 4-grams shows that about 1/3 of these comments contains unseen PoS 4-grams. Our training data contains more than 300,000 possible 4-grams in the category of native US English speaker, but that is still not enough, not to mention that the category of Korean native speaker only covers 18,000 4-grams. It seems that a good estimation of unseen PoS 4-grams can boost the accuracy. What's more, even word-unigram suffers the same problem (each comment with length greater than 100 had a token that was not seen anywhere before).
+
+Another experiment runs on different length of comments using 4-grams, and we believe that the longer the comments, the higher the accuracy.
+
+\begin{table}[h]
+\begin{center}
+\begin{tabular}{|l|l|l|l|l|}
+\hline Accuracy & \bf len>50 & \bf len>100 & \bf len>150 & \bf len>200 \\ \hline
+4-grams overall & 33.18\% & 35.47\%  & 36.61\% & 37.57\% \\
+baseline-max overall & 34.03\% & 34.01\% & 34.36\% & 35.04\% \\
+baseline-random overall & 5.00\% & 4.96\%  & 5.01\% & 4.27\%\\
+4-grams non-zero & 33.40\% & 37.54\%  & 40.07\% & 42.24\% \\
+baseline-max non-zero & 34.75\% & 35.26\% & 36.15\% & 37.85\% \\
+baseline-random non-zero & 5.04\% & 4.67\% & 4.97\% & 4.22\% \\
+\hline
+\end{tabular}
+\end{center}
+\caption{\label{font-table} Result of varies length. }
+\end{table}
+
+We also observed that, some frequently appeared 4-grams occupy rather different portion in the distribution. For instance,
+(IN,DT,NN,PRP): 0.13\% in Portugal but only 0.04\% in Korean
+(NN,NN,IN,DT): 0.15\% in Portugal but only 0.05\% in Polish
+(TO,DT,NN,IN): 0.11\% in Arabic while less than 0.06\% in any other languages
+
+Most of the time 
+
+
+Penalty for UNSEEN PoS-ngrams is too high and most of the time the correct answer was filtered at the first round, which means we never had a chance to calculate the similarity of distribution for the candidate. In our tricky data, only 545 out of 2265 comments has unique candidate, and we got an accuracy of 71.57\% if the correct answer is not eliminated due to unseen PoS n-grams and probably compare between the candidate native language with US English. This phenomenon shows that the language model is reliable as long as we can calculate the distribution similarity.
+
+In order to deal with unseen ngrams, we apply another method that can 
+Tried estimation using Trigram/Bigram/Unigram
+cascadely/seperately.
+All these attempts seems not Performing well...
+ 
+With Only Trigram/Bigram estimation: 34.5\%
+ 
+With Only Bigram/Unigram estimation: 29.7\%
+ 
+With Both: 31.3\%
+
+
 
 
 \section{Conclusions}
