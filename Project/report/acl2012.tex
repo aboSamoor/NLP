@@ -36,8 +36,19 @@
 \end{abstract}
 
 
+The paper presents the first attempt, up to our knowledge, to classify English writing styles on this scale and with the challenge of classifying day to day language written by writers with different backgrounds covering various areas of topics. The paper proposes simple machine learning algorithms and simple to generate features to solve hard problems. Relying on the scale of the data available from large sources of knowledge like Wikipedia. We believe such sources of data are crucial to generate robust solutions for the web with high accuracy and easy to deploy in practice. The paper achieves 74\% accuracy classifying native versus non native speakers writing styles.
+
+Moreover, the paper shows some interesting observations on the similarity between different languages measured by the similarity of their users English writing styles. This technique could be used to show some well known facts about languages as in grouping them into families, which our experiments support.
+
 \section{Introduction}
 %Rami's Part
+The internet nowadays is more diverse than any time before, with the introduction of social networks the majority of users are not any more native English speakers. This puts more challenges on the services providers to accommodate the English content to the new users. This paper tackles the challenge of identifying the native language of the user from their writing styles. We believe this task as a first step will be crucial in the development of many useful applications.
+
+Wikipedia is well known source for knowledge. Recently, it is used extensively to help in solving different information retrieval tasks especially the ones that involves semantic aspects. The use of wikipedia can be expanded to help the common NLP tools to perform better with the help of the diversity of topics and authors of wikipedia pages. Which will help in the data sparsity problem. The sustained growth of the content of wikipedia can bring performance gains with no much additional costs.
+
+The detection of the writer's native language can be helpful in application that targets new learners of English as a second language. Moreover, it could be adapted to transcribed text to help better voice recognition application when dealing with the non native speakers accents.
+
+
 
 \section{Related Work}
 %Chen's part
@@ -204,7 +215,7 @@ The learning curves of this experiment are similar to the ones from the previous
 
 \subsection{Native vs Non Native Experiment}
 %Explain the experiment and the results
-
+In this experiment all the non native English speakers were labelled as Non native. Figure \ref{non_cfm} and figure \ref{non_lc} shows that the classifier could achieve $74.449\%$ accuracy using around 322K comment divided between training, development and testing sets. Such high accuracy makes the classifier able to be deployed for practical usages.
 
 
 \begin{figure}[htp]
@@ -228,9 +239,22 @@ The learning curves of this experiment are similar to the ones from the previous
 \section{Conclusions}
 %Chen's Part
 
-\section*{Acknowledgments}
+
+\section{Future Work}
+%Chen+Rami
+As our results shows promising applications and trends using Wikipedia data to solve hard problems in robust means, we are looking to investigate the effects of adding the wikipedia diffs, especially the non minor ones, as another source of user contributions. Moreover, the minimum size of the comments affects the performance of our classifiers, the relation between the quality of the data used and the accuracy of the classification is another interesting aspect.
+
+The languages families experiments suggest the usefulness of using the English writing styles to define the similarities between different languages. This could lead to an interesting explanations and/or observations regarding the origins of some languages as Korean language which stays till a mysterious topic.
+
+Another direction is to solve the over fitting problem in our learning algorithms by applying smarter feature selection and adding more distinguishing features.
+
+
+
+\section*{Acknowledgements}
 %Chen's Part
 %We should thank Prof. Skiena for the resources he gave us.
+We would like to thank Steven Skiena for the discussion and the advice. This work will not be available without the computing resources offered by his lab. We are also indebted to the NLTK and the Sklearn teams for producing excellent NLP and machine learning resources.
+
 
 \begin{thebibliography}{}
 
