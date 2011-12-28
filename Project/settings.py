@@ -97,7 +97,7 @@ MAP_ALL = {
 "User_sv-N": "Swdish",
 "User_it-N": "Italian",
 "User_pl-N": "Polish",
-"User_zh-N": "Chinese1",
+"User_zh-N": "Mandarin",
 "User_no-N": "Norwagien",
 "User_fi-N": "Finnish",
 "User_da-N": "Danish",
@@ -106,13 +106,13 @@ MAP_ALL = {
 "User_tr-N": "Turkish",
 "User_ar-N": "Arabic",
 "User_ko-N": "Korean",
-"User_yue-N": "Chinese2"
+"User_yue-N": "Cantonese"
 }
 
 n = 4
 LEN_1SENT = 1
 NUM_SENTS = 1
-COMMENT_SIZE = 20
+COMMENT_SIZE = 5
 LAMBDAS = [0.01, 0.1, 0.3, 1, 3, 10, 30, 100, 300, 1000, 3000, 10000]
 #LAMBDAS = [0.01, 3, 10, 30, 100]
 #LAMBDAS = [30, 100, 300]

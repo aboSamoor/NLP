@@ -645,7 +645,7 @@ def main(options, args):
   logging.info("Confusion Matrix of the best classifier on the test data:\n%s\n" % cf_text)
   
   #This introduced a bug, where raw_coef are modified when they should not
-#  logging.info('Important features\n%s\n', clfs[max_index].show_most_informative_features(dev_fs))
+  logging.info('Important features\n%s\n', clfs[max_index].show_most_informative_features(dev_fs))
 
 if __name__ == "__main__":
   parser = OptionParser()
