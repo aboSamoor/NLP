@@ -9,29 +9,21 @@ import logging
 import json
 import nltk
 import os
-from nltk.classify.api import MultiClassifierI
+import sys
 from nltk import FreqDist, ngrams
-from random import choice
 from nltk.classify import accuracy
 from nltk import NgramModel
 from nltk.probability import LidstoneProbDist, SimpleGoodTuringProbDist
-import functools
-import pdb
 from cPickle import dump, load
 from nltk.corpus import stopwords
-from nltk.classify.maxent import MaxentClassifier, TypedMaxentFeatureEncoding
 from multiprocessing import Pool, cpu_count
 import perceptron
 from numpy import array
-from sklearn import linear_model, svm
-from sklearn.feature_selection import RFE
 from math import log
-from settings import *
 from re import compile
-from pybrain.datasets import SupervisedDataSet, ClassificationDataSet
-from pybrain.tools.shortcuts import buildNetwork
-from pybrain.supervised.trainers import BackpropTrainer
-from pybrain.structure import SoftmaxLayer
+import util
+from ml import *
+from util import *
 
 __author__ = "Rami Al-Rfou"
 __email__ = "rmyeid@gmail.com"
@@ -62,14 +54,6 @@ def replace_NNP(tagged_word):
   return (word,tag)
 
 
-def _map(func, list_, num_processors=2):
-  p = Pool(num_processors)
-  results = p.map(func, list_)
-  p.close()
-  p.join()
-  return results
-
-
 def clean_comment(sample):
   comment, label = sample
   new_comment = [[replace_NNP(tagged_word) for tagged_word in statement] for statement in comment]
@@ -88,7 +72,7 @@ def to_string_comment(sample):
 
 
 def to_string_samples(samples):
-  results = _map(to_string_comment, samples, (cpu_count()/6)+1)
+  results = pool_map(to_string_comment, samples, (cpu_count()/6)+1)
   return '\n\n'.join(results)
 
 
@@ -126,241 +110,14 @@ def prune_data(samples):
 
   # clean data
   if CLEAN:
-    new_samples = _map(clean_comment, new_samples)
+    new_samples = pool_map(clean_comment, new_samples)
 #    open('clean_data.txt', 'w').write(to_string_samples(new_samples))
   return new_samples
-
-
-class Memoized(object):
-  """Decorator that caches a function's return value each time it is called.
-  If called later with the same arguments, the cached value is returned, and
-  not re-evaluated.
-  """
-
-  __cache = {}
-
-  def __init__(self, func):
-    self.func = func
-    self.key = (func.__module__, func.__name__)
-
-  def __call__(self, *args):
-    try:
-      return Memoized.__cache[self.key][args]
-    except KeyError:
-      value = self.func(*args)
-      if self.key in Memoized.__cache:
-        Memoized.__cache[self.key][args] = value
-      else:
-        Memoized.__cache[self.key] = {args : value}
-      return value
-    except TypeError:
-      # uncachable -- for instance, passing a list as an argument.
-      # Better to not cache than to blow up entirely.
-      return self.func(*args)
-
-  def __get__(self, obj, objtype):
-    """Support instance methods."""
-    return functools.partial(self.__call__, obj)
-
-  @staticmethod
-  def reset():
-    Memoized.__cache = {}
-
-
-class Serialized(object):
-  """Decorator that serliazes a function's return value each time it is called.
-  If called later with the same arguments, the cached value is returned, and
-  not re-evaluated.
-  """
-
-  __CACHE = 'cache'
-  if not os.path.isdir(__CACHE):
-    os.mkdir(__CACHE)
-
-  def __init__(self, func):
-    self.func = func
-
-  def _path(self, name):
-    filename = '.'.join([self.func.__module__, self.func.__name__, name, 'ser'])
-    return os.path.join(Serialized.__CACHE, filename)
-
-  def __call__(self, name, *args):
-    data = None
-    filename = self._path(name)
-    try:
-      if not CACHE:
-        raise Exception
-      fh = open(filename, 'r')
-      data = load(fh)
-      fh.close()
-    except:
-      data = self.func(*args)
-      if CACHE:
-        fh = open(filename, 'w')
-        dump(data, fh)
-        fh.close()
-    return data
-
-  def __get__(self, obj, objtype):
-    """Support instance methods."""
-    return functools.partial(self.__call__, obj)
 
 
 def _estimator(fdist, bins):
   return SimpleGoodTuringProbDist(fdist)
 
-
-class Random(MultiClassifierI):
-
-  @property
-  @Memoized
-  def _train_labels(self):
-    return [label for (comment, label) in TRAIN]
-
-  def classify(self, unlabeled_problem):
-    return choice(self._train_labels)
-
-  @Memoized
-  def labels(self):
-    return list(set(self._train_labels))
-
-
-class MostCommon(MultiClassifierI):
-  
-  @property
-  @Memoized
-  def _train_labels(self):
-    return [label for (comment, label) in TRAIN]
-
-  @property
-  @Memoized
-  def _labels_dist(self):
-    return FreqDist(self._train_labels)
-    
-  def classify(self, unlabeled_problem):
-    return self._labels_dist.items()[0][0]
-
-  @Memoized
-  def labels(self):
-    return list(set(self._train_labels))
-
-
-class Perplexity(MultiClassifierI):
-  def __init__(self):
-    self._model = language_ngrams('Unigram_TRAIN', 1, TRAIN)
-
-  def labels(self):
-    return LANGUAGES
-
-  def classify(self, comment):
-    words = sum(comment, [])
-    probabilities = []
-    for label in self.labels():
-      probabilities.append((comment_perplexity(comment, self._model[label]), label))
-    return min(probabilities)[1]
-
-
-class Scikit(MultiClassifierI):
-  def __init__(self, lambda_=1.0):
-    labels = self.labels()
-    self._map = dict(zip(labels, range(len(labels))))
-    self._rmap = dict(zip(range(len(labels)), labels))
-    C = 1.0/lambda_
-    self._clf = linear_model.LogisticRegression(C=C)
-#    self._clf = svm.SVC(C=C)
-    self._fx = None
-
-  def _fsets2dataset(self, samples):
-    self._fx = samples[0][0].keys()
-    X = []
-    y = []
-    for sample in samples:
-      fset, label = sample
-      v = [fset[l] for l in self._fx]
-      y.append(self._map[label])
-      X.append(v)
-    return (array(X), array(y))
-
-  def labels(self):
-    return LANGUAGES
-
-  def classify(self, fset):
-    v = array([fset[l] for l in self._fx])
-    class_ = self._clf.predict(v)
-    return self._rmap[class_[0]]
-
-  def batch_classify(self, fsets):
-    v = array([[fset[l] for l in self._fx] for fset in fsets])
-    classes = self._clf.predict(v)
-    return [self._rmap[res] for res in classes]
-
-  def train(self, samples):
-    X, y = self._fsets2dataset(samples)
-    self._clf.fit(X, y)
-    return self
-
-
-  def show_most_informative_features(self, samples):
-    X, y = self._fsets2dataset(samples)
-    rfe = RFE(self._clf, 1)
-    rfe.fit(X, y)
-    ranking = rfe.ranking_
-    if len(ranking) != len(self._fx):
-      logging.error("Both feature ranking and features should have the same"
-                     "length %d != %d", len(ranking), len(self._fx))
-    fx_ranking = []
-    for i in range(len(self._fx)):
-      fx_ranking.append((ranking[i], self._fx[i]))
-    self._clf.fit(X, y)
-    return '\n'.join(['\t'.join([str(y),str(x)]) for x,y in sorted(fx_ranking)])
-
-
-class Pybrain(MultiClassifierI):
-  def __init__(self):
-    self._ds = None
-    self._net = None
-    self._trainer = None
-    labels = self.labels()
-    self._map = dict(zip(labels, range(len(labels))))
-    self._rmap = dict(zip(range(len(labels)), labels))
-
-  def samples_to_Xy(self, samples):
-    if not self._fx:
-      self._fx = samples[0][0].keys()
-    converter = lambda fset:[fset[l] for l in self._fx]
-    fsets, labels = zip(*samples)
-    X = map(converter, fsets)
-    return zip(X, labels) 
-    
-    
-  def train(self, samples):
-    self._fx = samples[0][0].keys()
-    self._ds = ClassificationDataSet(len(self._fx))
-    for sample in self.samples_to_Xy(samples):
-      fvec, label = sample
-      self._ds.addSample(fvec, [self._map[label]])
-    self._ds._convertToOneOfMany()
-    self._net = buildNetwork(self._ds.indim,
-                            self._ds.outdim, 
-                            self._ds.outdim, 
-                            self._ds.outdim, bias=True, outclass=SoftmaxLayer)
-    self._trainer = BackpropTrainer(self._net, self._ds, verbose=True,
-                                    )
-    error = self._trainer.trainEpochs(40)
-#    logging.info('Error: %f' % error)
-    return self
-    
-  def labels(self):
-    return LANGUAGES
-
-  def batch_classify(self, samples):
-    ds = ClassificationDataSet(len(self._fx))
-    for sample in samples:
-      fvec = [sample[l] for l in self._fx]
-      ds.addSample(fvec, [0])
-    results = self._trainer.testOnClassData(ds)
-    return [self._rmap[r] for r in results]
-      
       
 def similarity(freqdist, sequence, n):
   """Calculate the log of the counts of the n-grams of a sequence against a
@@ -392,13 +149,6 @@ def comment_similarity(model, comment, n):
   return [value/size for value in 
           [words_similarity, tags_similarity, char_similarity, w_size_similarity]]
     
-
-def comment_perplexity(comment, model):
-  e = 0.0
-  for statement in comment:
-    e += model.entropy(statement)
-  return e
-
 
 @Serialized
 def language_ngrams(n, training):
@@ -482,7 +232,7 @@ def featureset(sample):
 
 @Serialized
 def samples_featuresets(samples):
-  fs = _map(featureset, samples, (cpu_count()/8)+1)
+  fs = pool_map(featureset, samples, (cpu_count()/8)+1)
   normalize_featuresets(fs)
   return fs
 
@@ -519,7 +269,7 @@ def pick_lambda(train, dev):
   if len(LAMBDAS) == 1:
     return [classifier(LAMBDAS[0])]
   else:
-    result = _map(classifier, LAMBDAS, (cpu_count()/8)+1)
+    result = pool_map(classifier, LAMBDAS, (cpu_count()/8)+1)
     return result
     
 
@@ -560,12 +310,11 @@ def stats(samples):
 
 def main(options, args):
 
-  global TRAIN, DEV, TEST, MAP, GRAMS, LANGUAGES, TAGS, __train_fs, __dev_fs, __test_fs
+  logging.info("Experiment started")
+  global TRAIN, DEV, TEST, MAP, GRAMS, LANGUAGES, TAGS, NAME
+  global  __train_fs, __dev_fs, __test_fs
 
-  exps_MAPS ={'g': MAP_GROUPS, 'p': MAP_POPULAR, 'f': MAP_FOREIGN,
-              'n':MAP_POP_NoEN, 'a': MAP_ALL}
-  MAP = exps_MAPS[options.exp]
-  logging.info("Eperiment mode is %s" % options.exp)
+  logging.info("Eperiment mode is %s" % NAME)
 
   TRAIN = json.load(open(TRAIN_FILE, 'r'))
   DEV  = json.load(open(DEV_FILE, 'r'))
@@ -598,15 +347,15 @@ def main(options, args):
                % (len(TRAIN)/total_size, len(DEV)/total_size, len(TEST)/total_size))
   
  
-  random_classifier = Random()
+  random_classifier = Random(TRAIN)
   logging.debug("random_classifier labels are:\n %s", str(random_classifier.labels()))
   logging.info("random_classifier accuracy is: %3.3f", accuracy(random_classifier, TEST))
 
-  most_common = MostCommon()
+  most_common = MostCommon(TRAIN)
   logging.debug("MostCommon_classifier labels are:\n %s", str(most_common.labels()))
   logging.info("MostCommon_classifier accuracy is: %3.3f", accuracy(most_common, TEST))
 
-#  perp = Perplexity()
+#  perp = Perplexity(TRAIN)
 #  logging.debug("Perplexity_classifier labels are:\n %s", str(perp.labels()))
 #  logging.info("Perplexity_classifier accuracy is: %3.3f", accuracy(perp, DEV))
 
@@ -650,14 +399,22 @@ def main(options, args):
 if __name__ == "__main__":
   parser = OptionParser()
   parser.add_option("-f", "--file", dest="filename", help="Input file")
-  parser.add_option("-e", "--experiment", dest="exp", help="Experiment Class")
+  parser.add_option("-c", "--conf", dest="conf", help="Configuration file")
   parser.add_option("-l", "--log", dest="log", help="log verbosity level",
                     default="INFO")
   (options, args) = parser.parse_args()
+
+  conf_path = os.path.dirname(os.path.abspath(options.conf))
+  sys.path.append(conf_path)
+  from settings import *
+  util.CACHE_FOLDER = conf_path
+  util.CACHE = CACHE
+
   root = logging.getLogger()
   while root.handlers:
     root.removeHandler(root.handlers[0])
   numeric_level = getattr(logging, options.log.upper(), None)
-  file_log = '.'.join([options.filename, options.exp, 'log'])
+  file_log = '.'.join([options.filename, NAME, 'log'])
   logging.basicConfig(level=numeric_level, format=LOG_FORMAT, filename=file_log)
+
   main(options, args)
