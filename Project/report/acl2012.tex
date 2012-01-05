@@ -36,15 +36,15 @@
 \end{abstract}
 
 
-The paper presents the first attempt, up to our knowledge, to classify English writing styles on this scale and with the challenge of classifying day to day language written by writers with different backgrounds covering various areas of topics. The paper proposes simple machine learning algorithms and simple to generate features to solve hard problems. Relying on the scale of the data available from large sources of knowledge like Wikipedia. We believe such sources of data are crucial to generate robust solutions for the web with high accuracy and easy to deploy in practice. The paper achieves 74\% accuracy classifying native versus non native speakers writing styles.
+This paper presents the first attempt, up to our knowledge, to classify English writing styles on this scale with the challenge of classifying day to day language written by writers with different backgrounds covering various areas of topics. The paper proposes simple machine learning algorithms and simple to generate features to solve hard problems. Relying on the scale of the data available from large sources of knowledge like Wikipedia, we believe such sources of data are crucial to generate robust solutions for the web with high accuracy and easy to deploy in practice. The paper achieves 74\% accuracy classifying native versus non native speakers writing styles.
 
-Moreover, the paper shows some interesting observations on the similarity between different languages measured by the similarity of their users English writing styles. This technique could be used to show some well known facts about languages as in grouping them into families, which our experiments support.
+Moreover, the paper shows some interesting observations on the similarity between different languages measured by the similarity of their users English writing styles. This technique could be used to support some well known practices of grouping languages into families.
 
 \section{Introduction}
 %Rami's Part
-The internet nowadays is more diverse than any time before, with the introduction of social networks the majority of users are not any more native English speakers. This puts more challenges on the services providers to accommodate the English content to the new users. This paper tackles the challenge of identifying the native language of the user from their writing styles. We believe this task as a first step will be crucial in the development of many useful applications.
+The internet nowadays is more diverse than any time before, with the introduction of social networks the majority of users are not any more native English speakers. This puts more challenges on the services providers to accommodate the English content to the new users. This paper tackles the challenge of identifying the native language of the user from their writing styles. We believe this task as a first step will be a crucial in the development of many useful applications.
 
-Wikipedia is well known source for knowledge. Recently, it is used extensively to help in solving different information retrieval tasks especially the ones that involves semantic aspects. The use of wikipedia can be expanded to help the common NLP tools to perform better with the help of the diversity of topics and authors of wikipedia pages. Which will help in the data sparsity problem. The sustained growth of the content of wikipedia can bring performance gains with no much additional costs.
+Wikipedia is well known source for knowledge. Recently, it is used extensively to help in solving different information retrieval tasks especially the ones that involves semantic aspects. The use of Wikipedia can be expanded to help the common NLP tools to perform better with the help of the diversity of topics and authors of Wikipedia pages which will help in the data sparsity problem. The sustained growth of the content of Wikipedia can bring performance gains with no much additional complexity costs.
 
 The detection of the writer's native language can be helpful in application that targets new learners of English as a second language. Moreover, it could be adapted to transcribed text to help better voice recognition application when dealing with the non native speakers accents.
 
@@ -60,7 +60,7 @@ Similar work was done by \newcite {Tsur:2007}. They focused on the relationships
 
 \newcite {Wong:2009} replicated the work of \newcite {Koppel:2005} and digged more in the field of syntactic structures. They experimented on three selected syntactic errors, which are commonly observed in non-native English Users, including subject-verb disagreement, mismatch of noun-number pairs and wrong usage of determiners and the best overall accuracy was 73.71\% on the second version of ICLE across seven languages. What's more, \newcite {Wong:2011} continued their works in native language detection and focused more on the influence of syntactic structures, specifically parsing trees. They tried to exploiting the parsing structures by applying Standford parsers and C\&J parsers with different parameters to certain corpus, and capture the number of usages of some distinguishable rules. Their results and observations suggested that the syntactic structures would be supportive in detecting native languages and improving the performance of existing classifiers.
 
-Different from previous works mentioned above, our task runs on a totally different platform--wikipedia. Our goal is to find out the influence of one's native languages on the style of his/her writings under the circumstance of talking and discussion. With the help of huge amount of available data, we can try exploring the statistics features of a certain languages using similar features in \newcite {Koppel:2005} and \newcite {Wong:2011}, as well as the distribution of part-of-speech(PoS) n-grams and word n-grams.      
+Different from previous works mentioned above, our task runs on a totally different platform--Wikipedia. Our goal is to find out the influence of one's native languages on the style of his/her writings under the circumstance of talking and discussion. With the help of huge amount of available data, we can try exploring the statistics features of a certain languages using similar features in \newcite {Koppel:2005} and \newcite {Wong:2011}, as well as the distribution of part-of-speech(PoS) n-grams and word n-grams.      
 
 \section{Wikipedia}
 %Explain why wikipedia is an awesome source
@@ -71,9 +71,9 @@ Different from previous works mentioned above, our task runs on a totally differ
 
 Wikipedia is the de facto source of knowledge for internet users. Wikipedia is the 5\textsuperscript{th} most popular website according to Google ranking. For researchers Wikipedia is a giant linguistic and social jar of experiments. The richness of the website content that is written by users from different backgrounds represents a robust sample of the current languages usage by native and non native speakers.
 
-With more than 90 thousand active users and 4.4 million article the content of Wikipedia spans large number of topics. The diversity of the authors of those articles beside the records of the revisions that are stored in a database of revisions that the website offer for free presents a realistic source of text. Such resource presents a higher quality of data that is not achievable by the other commonly used sources of text as news and scientific papers.
+With more than 90 thousand active users and 4.4 million article the content of Wikipedia spans large number of topics. The diversity of the authors of those articles beside the records of versions that are stored in a database of revisions that the website offer for free presents a realistic source of text. Such resource presents a higher quality of data that is not achievable by the other commonly used sources of text as news and scientific papers.
 
-Such successful website has a complex database structure to serve its users. Therefore, extracting data could be a complex process. Our goal is to identify the languages skills of the users and collect their contributions. To achieve the first task Wikipedia has a an information box called \emph{Babel} that users can add voluntarily to their profile pages to state their skills in different languages. Figure \ref{babel} shows a user who identified his native language and her skills in 3 other non native languages in a scale for 1-5. This info box will be indexed in the database as categories.
+Such successful website has a complex database structure to serve its users. Therefore, extracting data could be a complex process. Our goal is to identify the languages skills of the users and collect their contributions. To achieve the first task Wikipedia has a an information box called \emph{Babel} that users can add voluntarily to their profile pages to state their skills in different languages. Figure \ref{babel} shows a user who identified his native language and her skills in 3 other non native languages on a scale of 1-5. This info box is indexed in the database as categories.
 
 
 \begin{figure}[htp]
@@ -98,24 +98,24 @@ The patterns of the recommended signatures styles are limited in number, however
 
 \section{Experiments}
 %Rami's part
-We found that around 60 thousands users specified their language skills. Figure \ref{native_dist} shows that the percentage of users who claimed that their one of their native languages is English is around 47\% of English wikipedia users base. 
+We found that around 60 thousands users specified their language skills. Figure \ref{native_dist} shows that the percentage of users who claimed that their one of their native languages is English is around 47\% of English Wikipedia users base. 
 \begin{figure}[htp]
-\centering
-\includegraphics[scale=0.5]{chart_4.png}
+
+\includegraphics[scale=0.56]{chart_4.png}
 \caption{Users distribution over native languages in English Wikipedia}
 \label{native_dist}
 \end{figure}
 
-We parsed the talk pages with the \verb+namespace=1+, they represents x\% of the talk pages, which produced around 12 million comments. Only 2.4 million comment we could identify to users with known language skills. Moreover, not all the users made comments in the talk pages we parsed, therefore, The number of the users who made at least one contribution in the extracted contributions is around 30 thousand user.
+We parsed the talk pages with the \verb+namespace=1+, they represents x\% of the talk pages, which produced around 12 million comments. Only 2.4 million comment we could identify them to belong to users with known language skills. Moreover, not all the users made comments in the talk pages we parsed, therefore, The number of the users who made at least one comment in the extracted comments is around 30 thousand user.
 
-As we have large number of comments and users and as we believe the data we have is still noisy. We applied the following filtering mechanisms:
+Since we have large number of comments and users, we believe the data we have is still noisy. We applied the following filtering mechanisms:
 \begin{itemize}
-\item We picked the users of the most popular 19 native languages.
+\item We picked the users of the most popular 20 native languages.
 \item We picked out of the English native speakers the users who specified the EN-US as their native language only to avoid users who are so skilled in English but are not living in English speaking countries.
 \item We excluded the users who specified more than one native language out of the picked native languages to avoid unrealistic scenarios where users claim to be native in more than two languages.
 \end{itemize}
 
-The new data set after the filtering is consistent of 9857 user and 589228 comments.
+The new data set after the filtering is composed of 9857 user and 589228 comments.
 
 \subsection{Setup}
 %Explain the pruning and the filtering that was done to the data.
@@ -123,8 +123,8 @@ The following experiments are conducted under the following conditions:
 \begin{itemize}
 \item The accepted comments has to have at least 20 tokens to avoid short and non meaningful comments.
 \item Proper nouns are replaced by their tags to avoid bias toward topics.
-\item Non ascii characters are replaced by a special character to avoid bias foreign languages usage in the comments.
-\item The classifier has balanced number of comments for each its classes. Therefore, the two baseline classifiers; the most common label and the random classifier will have an accuracy of 1/number of classes.
+\item Non ascii characters are replaced by a special character to avoid bias toward foreign languages usage in the comments.
+\item The classifier has balanced number of comments for each its classes. Therefore, the two baseline classifiers; the most common label and the random classifier will have an accuracy of \verb+1/number of classes+.
 \item Logistic Regression algorithm is used to for the classification task.
 \item The data set is split to 70\% training set, 10\% development set and 20\% testing set.
 \end{itemize}
@@ -137,7 +137,7 @@ The comments of training set is grouped by class and the following frequency dis
 \item 1-4 grams over the part of speech tags.
 \end{itemize}
 
-For each comment ($C$) similarity measurements($Sim$) are calculated against each n-gram frequency distribution ($f(n)$) according to the following equations:
+For each comment ($C$) similarity measurements ($Sim$) are calculated against each n-gram frequency distribution ($f(n)$) according to the following equations:
 
 \[
   count(x, f, n) = \left\{ 
@@ -152,11 +152,11 @@ For each comment ($C$) similarity measurements($Sim$) are calculated against eac
 
 So if our problem has six classes this will generate $6*3*4 = 72$ features.
 
-Other features also included the relative frequency of each of the stop words to the size of the comments. The  125 stop words are extracted from the NLTK stop words corpus. Moreover, the average size of words and the average number  of sentences is also added.
+Other features also included the relative frequency of each of the stop words to the size of the comments. The  125 stop words are extracted from the NLTK stop words corpus. Moreover, the average size of words, the size of the comments and the average number  of sentences is also added.
 
 \subsection{Popular Languages Experiment}
 %Explain the experiment and the results
-The most popular six languages: US-EN, German, Spanish, French, Russian and Dutch  are chosen to train a classifier to detect the user's native language. Figure \ref{pop_cfm} shows the confusion matrix of the experiment that is done using 100\% of data set, about 150K comment. We can see clearly that the Russian users are the easiest to identify. Moreover, the classifier is the most confused distinguishing the German and the Dutch users with error $>2.0\%$ and to a less degree between (EN-US, French) and (EN-US, Spanish). These numbers confirm a basic intuition that users who have geographical proximity will have more borrowed words and grammars between their native languages which will affect their writing styles in English.
+The most popular six languages: US-EN, German, Spanish, French, Russian and Dutch  are chosen to train a classifier to detect the user's native language. Figure \ref{pop_cfm} shows the confusion matrix of the experiment that is done using 100\% of data set, about 150K comment. We can see clearly that the Russian users are the easiest to identify. Moreover, the classifier is the most confused distinguishing the German and the Dutch users with error $>2.0\%$ and to a less degree between (EN-US, French) and (EN-US, Spanish). These numbers confirm a basic intuition that the languages that have geographical proximity will have more borrowed words and grammars between them. This will affect their speakers writing styles in English.
 
 
 
@@ -168,7 +168,7 @@ The most popular six languages: US-EN, German, Spanish, French, Russian and Dutc
 \label{pop_cfm}
 \end{figure}
 
-Figure \ref{pop_lc} shows that the best accuracy that the classifier achieved is 50.275\%. The learning curves shows a typical over fitting situation where the more data you have the better the classifier can achieve. And here the size of data that can be extracted from wikipedia plays a significant role to boosts the accuracy from 37\% to over 50\%. The growth of the curve is similar to $\sqrt{x}$ curve which suggests the importance of the increase in the coverage of unique words that the frequency distribution which grows also with the same rate.
+Figure \ref{pop_lc} shows that the best accuracy that the classifier achieved is 50.275\%. The learning curves shows a typical over fitting situation where the more data you have the better the classifier can achieve. And here the size of data that can be extracted from Wikipedia plays a significant role to boosts the accuracy from 37\% to over 50\%. The growth of the curve is similar to $\sqrt{x}$ curve which suggests the importance of the increase in the coverage of unique words that the frequency distribution which grows also with the same rate.
 
 
 \begin{figure}[htp]
@@ -181,7 +181,7 @@ Figure \ref{pop_lc} shows that the best accuracy that the classifier achieved is
 \subsection{Languages Families Experiment}
 %Explain the experiment and the results
 
-The confusion in classifying Dutch and German users suggests that there is a similarity between groups of languages. Referring to the linguistics research history of classifying the languages into families according to similar features and development history, this experiment tries to put such grouping under the microscope. 17 languages are grouped into 5 families as the following:
+The confusion in classifying Dutch and German users suggests that there is a similarity between groups of languages. Referring to the linguistics research history of classifying the languages into families according to similar features and development history, this experiment tries to put such grouping under the microscope. 18 languages are grouped into 5 families as the following:
 \begin{itemize}
 \item North Germanic\\
 German, Dutch, Norwegian, Swedish, Danish
@@ -190,12 +190,12 @@ Spanish, French, Portuguese, Italian
 \item Uralic \\
 Russian, Polish, Finnish, Hungarian
 \item Asian\\
-Chinese, Japanese, Korean
+Mandarin, Cantonese, Japanese, Korean
 \item English
 \end{itemize}
 
 
-Figure \ref{fam_cfm} shows the that the Asian native speakers has a clear style of writing English that is easy to detect relatively. Moreover, as English belongs to the Anglic language family which also belongs to the West Germanic family of languages, we can see that clearly in terms of the high error rates $>3.0\%$. Other trends can be explained according to the users geographical proximity as in cases of (Uralic, North Germanic), (North Germanic, Roman).
+Figure \ref{fam_cfm} shows the that the Asian native speakers has a clear style of writing English that is easy to detect relatively. Moreover, as English belongs to the Anglic language family which also belongs to the West Germanic family of languages, we can see that clearly in terms of the high error rates $>3.0\%$ in classifying English vs West Germanic. Other trends can be explained according to the users geographical proximity as in cases of (Uralic, North Germanic), (North Germanic, Roman).
 
 \begin{figure}[htp]
 \centering
@@ -215,7 +215,7 @@ The learning curves of this experiment are similar to the ones from the previous
 
 \subsection{Native vs Non Native Experiment}
 %Explain the experiment and the results
-In this experiment all the non native English speakers were labelled as Non native. Figure \ref{non_cfm} and figure \ref{non_lc} shows that the classifier could achieve $74.449\%$ accuracy using around 322K comment divided between training, development and testing sets. Such high accuracy makes the classifier able to be deployed for practical usages.
+In this experiment all the non native English speakers were labeled as Non native. Figure \ref{non_cfm} and figure \ref{non_lc} shows that the classifier could achieve $74.449\%$ accuracy using around 322K comment divided between training, development and testing sets. Such high accuracy makes the classifier able to be deployed for practical usages.
 
 
 \begin{figure}[htp]
@@ -224,6 +224,7 @@ In this experiment all the non native English speakers were labelled as Non nati
 \caption{Native vs Non Native speakers experiment confusion matrix}
 \label{non_cfm}
 \end{figure}
+
 
 \begin{figure}[htp]
 \centering
@@ -334,18 +335,13 @@ Russian & 86 & 109 & 64 \\
 
 while in the real data, we get hundreds of non-native speakers falling into the category of US English native speaker since this class covers more n-grams than the others.
 
-In order to deal with unseen ngrams, we apply another method that can estimate the occurrance of a certain 4-gram by cascade down to using Trigram/Bigram/Unigram. But these attempts seems not Performing well, with only trigram/bigram estimation, the accuracy drop down to 34.5\%, and using only bigram/unigram estimation provide an accuracy of 29.7\%. If we apply both two strategies, the accuracy is 31.3\%. For most of the cases, cascade helps reduce the number of we predict some one as US English native, but it seldom solve the problem if the appearance of n-grams is really small, for instance, in Korean and Japanese. 
+In order to deal with unseen ngrams, we apply another method that can estimate the occurrance of a certain 4-gram by cascade down to using Trigram/Bigram/Unigram. But these attempts seems not Performing well, with only trigram/bigram estimation, the accuracy drop down to 34.5\%, and using only bigram/unigram estimation provide an accuracy of 29.7\%. If we apply both two strategies, the accuracy is 31.3\%. For most of the cases, cascade helps reduce the number of we predict some one as US English native, but it seldom solve the problem if the appearance of n-grams is really small, for instance, in Korean and Japanese.  
 
-
-\section{Conclusions}
-%Chen's Part
-Our experiments show that syntactic structures and writing styles appear to be different for people from different area. Even consider only these features, we can make judgment on one's native languages. And it will be supportive if applying them together with other semantic features.      
-
-\section{Future Work}
+\section{Conclusions and Future Work}
 %Chen+Rami
-As our results shows promising applications and trends using Wikipedia data to solve hard problems in robust means, we are looking to investigate the effects of adding the wikipedia diffs, especially the non minor ones, as another source of user contributions. Moreover, the minimum size of the comments affects the performance of our classifiers, the relation between the quality of the data used and the accuracy of the classification is another interesting aspect.
+As our results shows promising applications and trends using Wikipedia data to solve hard problems in robust means, we are looking to investigate the effects of adding the Wikipedia diffs, especially the non minor ones, as another source of users contributions. Moreover, the minimum size of the comments affects the performance of our classifiers, the relation between the quality of the data used and the accuracy of the classification is another interesting aspect.
 
-The languages families experiments suggest the usefulness of using the English writing styles to define the similarities between different languages. This could lead to an interesting explanations and/or observations regarding the origins of some languages as Korean language which stays till a mysterious topic.
+The languages families experiments suggest the usefulness of using the English writing styles to define the similarities between different languages. This could lead to an interesting explanations and/or observations regarding the origins of some languages as Korean language which still a controversial topic.
 
 Another direction is to solve the over fitting problem in our learning algorithms by applying smarter feature selection and adding more distinguishing features.
 
