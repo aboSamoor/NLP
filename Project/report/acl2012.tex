@@ -155,6 +155,51 @@ So if our problem has six classes this will generate $6*3*4 = 72$ features.
 
 Other features also included the relative frequency of each of the stop words to the size of the comments. The  125 stop words are extracted from the NLTK stop words corpus. Moreover, the average size of words and the average number  of sentences is also added.
 
+
+\subsection{Native vs Non Native Experiment}
+%Explain the experiment and the results
+This experiment tries to detect the non native speakers comments. All users with native language other than English are placed into the same category. The number of comments used is around 322K comment. Figure \ref{non_cfm} and figure \ref{non_lc} shows that the classifier succeeds to reach $74.45\%$ accuracy. The features importance order is, Words tri-gram,Words uni-gram, Words bi-gram, Words 4-gram, character bigram, PoS tags 4-gram, character 4-gram, trigram PoS tags.
+
+
+
+
+\begin{figure}[htp]
+\centering
+\includegraphics[scale=0.45]{native_cfm.png}
+\caption{Native vs Non Native speakers experiment confusion matrix}
+\label{non_cfm}
+\end{figure}
+
+\begin{figure}[htp]
+\centering
+\includegraphics[scale=0.45]{native_lc.png}
+\caption{Non native vs native experiment learning curves}
+\label{non_lc}
+\end{figure}
+
+Table shows the most correlated grams and languages from the important features.
+
+\begin{table}[htp]
+\begin{tabular}{l|ll}
+	Feature & Speaker  & Gram
+	\\\hline
+	Words Trigrams & Native& used in the\\
+	 &  &in the middle\\
+	 & Non Native &article on NNP\\
+	 & & ``,", you, have\\
+	Words Unigrams &Non Native& scene, To,\\   &&describing, earth,\\ && referenced, am\\
+	Words Bigrams &Native& years of, I see\\
+	&&if you\\
+	&Non Native& You have, we do\\
+	&& of people\\
+	Characters Bigram &None Native& th, e \verb+space+,\\&& \verb+space+ \verb+comma+\\
+	&Native& l-, at, ll\\
+	PoS 4-gram &&\\
+	
+\end{tabular}
+\end{table}
+
+
 \subsection{Popular Languages Experiment}
 %Explain the experiment and the results
 The most popular six languages: US-EN, German, Spanish, French, Russian and Dutch  are chosen to train a classifier to detect the user's native language. Figure \ref{pop_cfm} shows the confusion matrix of the experiment that is done using 100\% of data set, about 150K comment. We can see clearly that the Russian users are the easiest to identify. Moreover, the classifier is the most confused distinguishing the German and the Dutch users with error $>2.0\%$ and to a less degree between (EN-US, French) and (EN-US, Spanish). These numbers confirm a basic intuition that users who have geographical proximity will have more borrowed words and grammars between their native languages which will affect their writing styles in English.
@@ -214,24 +259,18 @@ The learning curves of this experiment are similar to the ones from the previous
 \label{fam_lc}
 \end{figure}
 
-\subsection{Native vs Non Native Experiment}
-%Explain the experiment and the results
-In this experiment all the non native English speakers were labelled as Non native. Figure \ref{non_cfm} and figure \ref{non_lc} shows that the classifier could achieve $74.449\%$ accuracy using around 322K comment divided between training, development and testing sets. Such high accuracy makes the classifier able to be deployed for practical usages.
+\section{Results}
 
+\begin{table}[htp]
+\begin{tabular}{l|ll}
+	Experiment & Logistic Regression & Linear SVM
+	\\\hline
+	Non Native & 74.45\% & 74.53\%\\
+	Families & 50.81\% &50.53\% \\
+	Popular & 50.27\% & 50.26\%\\
+\end{tabular}
+\end{table}
 
-\begin{figure}[htp]
-\centering
-\includegraphics[scale=0.45]{native_cfm.png}
-\caption{Native vs Non Native speakers experiment confusion matrix}
-\label{non_cfm}
-\end{figure}
-
-\begin{figure}[htp]
-\centering
-\includegraphics[scale=0.45]{native_lc.png}
-\caption{Non native vs native experiment learning curves}
-\label{non_lc}
-\end{figure}
 
 \section{Writing Styles}
 %Chen's part
