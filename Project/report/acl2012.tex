@@ -134,7 +134,7 @@ Other features also includes the relative frequency of each of the stop words to
 
 
 \subsection{Native vs Non Native Experiment}
-This experiment aims to detect the non native speakers comments. All users with native language other than English are placed into the same category. The number of comments used is around 322K comment. Table \ref{table:results} shows that the logistic regression classifier succeeds to reach $74.45\%$ accuracy. Figure \ref{non_cfm} shows the confusion matrix of the classifier.
+This experiment aims to detect the non native speakers comments. All users with native language other than English are placed into the same category. The number of comments used is around 322K comment. Table \ref{table:results} shows that the linear SVM classifier succeeds to reach $74.53\%$ accuracy. Figure \ref{non_cfm} shows the confusion matrix of the classifier.
 
 
 \begin{figure}[htp]
@@ -196,7 +196,7 @@ This experiment aims to classify the speakers of the most frequent native langua
 \begin{figure}[htp]
 \centering
 \includegraphics[scale=0.45]{popular_cfm.png}
-\caption{Popular Languages experiment confusion matrix}
+\caption{Frequent languages experiment confusion matrix}
 \label{pop_cfm}
 \end{figure}
 
@@ -240,8 +240,7 @@ The most informative features are ordered as the following, words bigrams, words
 \end{table}
 
 
-Table \ref{table:results} shows that the best accuracy that the classifier achieved is 50.27\%. 
-
+Table \ref{table:results} shows that the best accuracy that the classifier achieved is 50.27\% with 77K comment used. 
 \subsection{Languages Families Experiment}
 
 The confusion in classifying Dutch and German users suggests that there is a similarity between groups of languages. Referring to the linguistics research history of classifying the languages into families according to similar features and development history, this experiment tries to put such grouping under the microscope. 18 languages are grouped into 5 families as the following:
@@ -279,10 +278,10 @@ Taking the opposite approach, we took the 20 languages and applied the same clas
 
 The above clusters supports to large extent the literature classification of languages.
 
-\section{Results}
+\subsection{Learning Algorithms}
 
-The learning curves shows a typical over fitting situation where the more data you have the better the classifier can achieve. And here the size of data that can be extracted from Wikipedia plays a significant role to boosts the accuracy from 37\% to over 50\%. The growth of the curve is similar to $\sqrt{x}$ curve which suggests the importance of the increase in the coverage of unique words that the frequency distribution which grows also with the same rate.
-The learning curves of this experiment are similar to the ones from the previous experiment with the exception that the best accuracy that is achieved is less with $47.542\%$ when 100\% of the data is used. That could be explained when we notice that the total number of comments that are used in this experiment is 82K which around 50\% of the data used in the previous experiment. With 50\% of the data in the popular languages experiment the classifier achieved similar performance. We could not add more comments because of the constraints that all the classes should have the same number of comments.
+Table \ref{table:results} shows negligible differences between different learning algorithms used in the experiments. 
+
 \begin{table}[htp]
 \begin{tabular}{l|ll}
 	Experiment & Logistic Regression & Linear SVM
@@ -291,9 +290,21 @@ The learning curves of this experiment are similar to the ones from the previous
 	Frequent & 50.27\% & 50.26\%\\
 	Families & 50.81\% &50.53\% \\
 \end{tabular}
-\caption{Accuracy of the classifier for the experiments.}
+\caption{Accuracy of classification using different learning algorithms.}
 \label{table:results}
 \end{table}
+
+Figure \ref{comb_lc} shows a typical over fitting situation where the more data you have the better the classifier can achieve. And here the size of data that can be extracted from Wikipedia plays a significant role to boosts the accuracy from 37\% to over 50\% in case of the Frequent languages and Families of languages experiments. The growth of the curve is similar to $\sqrt{x}$ curve which is similar to the growth of seen tokens in language models for English. This suggests the importance of the increase in the coverage of unique words to the performance of the classifier.
+
+\begin{figure}[htp]
+\centering
+\includegraphics[scale=0.45]{combined_lc.png}
+\caption{Learning curves of the logistic regression algorithm.}
+\label{comb_lc}
+\end{figure}
+
+
+
 
 
 \section{Writing Styles}
@@ -401,13 +412,13 @@ while in the real data, we get hundreds of non-native speakers falling into the 
 In order to deal with unseen ngrams, we apply another method that can estimate the occurrence of a certain 4-gram by cascade down to using Trigram/Bigram/Unigram. But these attempts seems not Performing well, with only trigram/bigram estimation, the accuracy drop down to 34.5\%, and using only bigram/unigram estimation provide an accuracy of 29.7\%. If we apply both two strategies, the accuracy is 31.3\%. For most of the cases, cascade helps reduce the number of we predict some one as US English native, but it seldom solve the problem if the appearance of n-grams is really small, for instance, in Korean and Japanese.  
 
 \section{Conclusions and Future Work}
-As our results shows promising applications and trends using Wikipedia data to solve hard problems in robust means, we are looking to investigate the effects of adding the Wikipedia diffs, especially the non minor ones, as another source of users contributions. Moreover, the minimum size of the comments affects the performance of our classifiers, the relation between the quality of the data used and the accuracy of the classification is another interesting aspect.
+As our results shows promising applications and trends using Wikipedia data to solve hard problems in robust means, there are many paths to improve our results and discover more interesting insights. We are looking to see the effect of increasing fluency of the non native speakers on their English language usage.
+
+Moreover, as the learning curves show, it worth the effort increasing the size of the data in order of magnitude by adding the Wikipedia diffs, especially the non minor ones, as another source of users contributions. Moreover, the minimum size of the comments affects the performance of our classifiers, the relation between the quality of the data used and the accuracy of the classification is another interesting aspect.
 
 The languages families experiments suggest the usefulness of using the English writing styles to define the similarities between different languages. This could lead to an interesting explanations and/or observations regarding the origins of some languages as Korean language which still a controversial topic.
 
 Another direction is to solve the over fitting problem in our learning algorithms by applying smarter feature selection and adding more distinguishing features.
-
-
 
 \section*{Acknowledgements}
 We would like to thank Steven Skiena for the discussion and the advice. This work will not be available without the computing resources offered by his lab. We are also indebted to the NLTK and the Sklearn teams for producing excellent NLP and machine learning resources.
