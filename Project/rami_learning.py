@@ -10,6 +10,7 @@ import json
 import nltk
 import os
 import sys
+from random import shuffle
 from nltk import FreqDist, ngrams
 from nltk.classify import accuracy
 from nltk import NgramModel
@@ -22,6 +23,7 @@ from numpy import array
 from math import log
 from re import compile
 import util
+from demonym import *
 from ml import *
 from util import *
 
@@ -50,6 +52,8 @@ def clean_word(tagged_word):
 def replace_NNP(tagged_word):
   word, tag = tagged_word
   if tag in ['NNP', 'NNPS']:
+    return (tag, tag)
+  if word in DEMONYMS:
     return (tag, tag)
   return (word,tag)
 
@@ -89,24 +93,28 @@ def prune_data(samples):
 
   samples = filter(is_valid, samples)
 
+  shuffle(samples)
   comments, labels = zip(*samples)
   labels = [MAP[l] for l in labels]
   samples = zip(comments, labels)
+  new_samples = samples
 
-  # Balance data
-  dist = FreqDist(labels)
-  smallest_number = dist.items()[-1][1]
+  if BALANCED:
+    # Balance data
+    dist = FreqDist(labels)
+    smallest_number = dist.items()[-1][1]
 
-  new_samples = []
-  counts = {}
-  for lang in dist.keys():
-    counts[lang] = 0
+    new_samples = []
+    counts = {}
+    for lang in dist.keys():
+      counts[lang] = 0
 
-  for sample in samples:
-    comment, label = sample
-    if counts[label] <= smallest_number:
-      new_samples.append(sample)
-      counts[label] += 1
+    for sample in samples:
+      comment, label = sample
+      if counts[label] <= smallest_number:
+        new_samples.append(sample)
+        counts[label] += 1
+  
 
   # clean data
   if CLEAN:
