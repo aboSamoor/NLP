@@ -10,6 +10,9 @@ from cPickle import dump, load
 import json
 import pdb
 import os
+import util
+from math import log
+from util import *
 
 __author__ = "Rami Al-Rfou"
 __email__ = "rmyeid@gmail.com"
@@ -17,82 +20,6 @@ __email__ = "rmyeid@gmail.com"
 LOG_FORMAT = "%(asctime).19s %(levelname)s %(filename)s: %(lineno)s %(message)s"
 
 CACHE = True
-
-
-class Serialized(object):
-  """Decorator that serliazes a function's return value each time it is called.
-  If called later with the same arguments, the cached value is returned, and
-  not re-evaluated.
-  """
-
-  __CACHE = 'cache'
-  if not os.path.isdir(__CACHE):
-    os.mkdir(__CACHE)
-
-  def __init__(self, func):
-    self.func = func
-
-  def _path(self, name):
-    filename = '.'.join([self.func.__module__, self.func.__name__, name, 'ser'])
-    return os.path.join(Serialized.__CACHE, filename)
-
-  def __call__(self, name, *args):
-    data = None
-    filename = self._path(name)
-    try:
-      if not CACHE:
-        raise Exception
-      fh = open(filename, 'r')
-      data = load(fh)
-      fh.close()
-    except:
-      data = self.func(*args)
-      if CACHE:
-        fh = open(filename, 'w')
-        dump(data, fh)
-        fh.close()
-    return data
-
-  def __get__(self, obj, objtype):
-    """Support instance methods."""
-    return functools.partial(self.__call__, obj)
-
-
-class Memoized(object):
-  """Decorator that caches a function's return value each time it is called.
-  If called later with the same arguments, the cached value is returned, and
-  not re-evaluated.
-  """
-
-  __cache = {}
-
-  def __init__(self, func):
-    self.func = func
-    self.key = (func.__module__, func.__name__)
-
-  def __call__(self, *args):
-    try:
-      return Memoized.__cache[self.key][args]
-    except KeyError:
-      value = self.func(*args)
-      if self.key in Memoized.__cache:
-        Memoized.__cache[self.key][args] = value
-      else:
-        Memoized.__cache[self.key] = {args : value}
-      return value
-    except TypeError:
-      # uncachable -- for instance, passing a list as an argument.
-      # Better to not cache than to blow up entirely.
-      return self.func(*args)
-
-  def __get__(self, obj, objtype):
-    """Support instance methods."""
-    return functools.partial(self.__call__, obj)
-
-  @staticmethod
-  def reset():
-    Memoized.__cache = {}
-
 
 def indices(list_, item):
   inds = []
@@ -105,7 +32,9 @@ def indices(list_, item):
 def z_score(list_):
   m = float(mean(array(list_)))
   s = float(std(array(list_)))
-  return [(x-m)/s for x in list_]
+  if s ==0:
+    return [0 for x in list_]
+  return [abs((x-m)/s) for x in list_]
 
 
 def anomalies(list_, threshold):
@@ -129,6 +58,7 @@ def featureset(distributions, elements, size):
 def freqdist_prob(freqdist, item):
   count = freqdist.get(item, 0.0)
   return count/float(freqdist.N())
+
     
 def valid_feature(distributions, elements, size, item):
   empty = 0
@@ -140,6 +70,7 @@ def valid_feature(distributions, elements, size, item):
   if empty > len(languages)/2:
     return False
   return True
+
 
 def features_probs(distributions, elements, size):
   features = featureset(distributions, elements, size)
@@ -154,6 +85,23 @@ def features_probs(distributions, elements, size):
       features_distribution[feature] = feature_probs
   return features_distribution
 
+
+def freqdist_logcount(freqdist, item):
+  return log(freqdist.get(item, 1.0), 2.0)
+
+
+def features_log_count(distributions, elements, size):
+  features = featureset(distributions, elements, size)
+  languages = sorted(distributions.keys())
+  features_distribution = {}
+  for feature in features:
+    feature_probs = []
+    for lang in languages:
+      prob = freqdist_logcount(distributions[lang][elements][size], feature)
+      feature_probs.append(prob)
+    features_distribution[feature] = feature_probs
+  return features_distribution
+
 @Serialized
 def features_languages(distributions):
   languages = sorted(distributions.keys())
@@ -162,7 +110,7 @@ def features_languages(distributions):
   probabilities = {}
   for element in elements:
     for size in sizes:
-      probabilities[(element,size)] = features_probs(distributions, element, size)
+      probabilities[str((element,str(size)))] = features_log_count(distributions, element, size)
   return probabilities
 
 
@@ -187,26 +135,49 @@ def interesting(probabilities, threshold):
   return results
 
 
+def important_features(probabilities):
+  results = dict(zip(probabilities.keys(), [[] for i in probabilities]))
+  for element_size in probabilities:
+    features = probabilities[element_size]
+    for feature in features:
+      prob_list = features[feature]
+      num_zeros = len(filter(lambda x: x<=1, prob_list))
+      if num_zeros <= len(prob_list)/2:
+        zscores = z_score(prob_list) 
+        max_zscore = max(zscores)
+        index_max_zscore = zscores.index(max_zscore)
+        results[element_size].append((max_zscore,index_max_zscore, feature, prob_list))
+  important_results = dict(zip(probabilities.keys(), [[] for i in probabilities]))
+  for element_size in probabilities:
+    results[element_size].sort()
+    important_results[element_size] = results[element_size][-10:]
+  return important_results
+
+
 def main(options, args):
+  util.CACHE_FOLDER = os.path.dirname(os.path.abspath(options.filename))
   distributions = load(open(options.filename, 'r'))
   logging.info("File has been read")
   languages = sorted(distributions.keys())
   map_ = dict(zip(range(len(languages)), languages))
-  probabilties = features_languages('features_probs', distributions)
+  probabilities = features_languages('features_probs', distributions)
   logging.info("Probabilities are caclulated for each feature")
 #  pdb.set_trace()
-  facts = interesting(probabilties, 2.235)
+  facts = important_features(probabilities)
   logging.info("facts are caclulated for each feature")
-  renamed_facts = []
-  for fact in facts:
-    feature, probs = fact
-    renamed = {}
-    for index, value in probs:
-      renamed[map_[index]] = value
-    renamed_facts.append((feature, renamed))
+  renamed_facts = dict(zip([k for k in facts], [[] for k in facts]))
+  for element_size in facts:
+    features = facts[element_size]
+    for feature in features:
+      max_zscore,index_max_zscore, feature_name, prob_list = feature
+      renamed = {}
+      for i in range(len(prob_list)):
+        renamed[map_[i]] = prob_list[i]
+      featured_language = map_[index_max_zscore]
+      renamed_facts[element_size].append((feature_name, featured_language, renamed))
   json.dump(renamed_facts, open(options.filename+'.facts', 'w'))
   logging.info("facts are dumped")
- 
+
 
 if __name__ == "__main__":
   parser = OptionParser()
