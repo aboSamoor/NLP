@@ -308,13 +308,13 @@ Figure \ref{comb_lc} shows a typical over fitting situation where the more data 
 
 
 \section{Writing Styles}
-%Chen's part
-Another type of Experiment focuses on the usage of PoS n-grams, trying to distinguish users by comparing the similarity of the PoS-ngrams distribution with a candidate language. We use the same definition of "similarity" and build a 20-classifier based on the whole training data (524 MB). After training our language model, The accuracy was around 95\% on training data.
+
+Another type of Experiment focuses on the usage of PoS n-grams, trying to distinguish users by comparing the similarity of the PoS-ngrams distribution with a candidate language. We use the same definition of "similarity" as mentioned in the previous section and \cite {alpaydin2004introduction} and build a 20-classifier based on the whole training data (524 MB). After training our language model, The accuracy was around 95\% on training data.
 
 The two baselines we selected are: Baseline-Max and Baseline-Random. Where in Baseline-Max we simply put each user into the category of native US English speaker since this class has the largest size with the
 probability of about 34\%. And in Baseline-Random, we choose randomly from 20 candidate languages. The expectation of accuracy should be 5\%.
 
-Since there exist some PoS-ngrams that might never appear in the training data, which means we have not seen such PoS-ngram before in any of the candidate category. We simply define these comments as "zero comments"--it is not precise to measure the value of these unseen PoS n-grams and we should put it into the category of native US English speaker to maximize the probability of correctness. Also, it sounds not reasonable if we consider comments that are too short. So we first try on comments that has more than 100 PoS n-grams, which means the comment has more than (100+n-1) tokens.
+Since there exist some PoS-ngrams that might never appear in the training data, which means we have not seen such PoS-ngram before in any of the candidate category. We simply define these comments as "zero comments"--it is not precise to measure the value of these unseen PoS n-grams and we should put it into the category of native US English speaker to maximize the probability of correctness. Also, it sounds not reasonable if we consider comments that are too short considering the experiments mentioned in \cite {wagner2009judging}. So we first try on comments that has more than 100 PoS n-grams, which means the comment has more than (100+n-1) tokens.
 
 \begin{table}[h]
 \begin{center}
@@ -371,8 +371,31 @@ We also observed that, some frequently appeared 4-grams occupy rather different 
 (IN,DT,NN,PRP): 0.13\% in Portugal but only 0.04\% in Korean
 (NN,NN,IN,DT): 0.15\% in Portugal but only 0.05\% in Polish
 (TO,DT,NN,IN): 0.11\% in Arabic while less than 0.06\% in any other languages
+(',',CD,NNP,CD) and (NNP,CD,-LRB-,NNP): Appeared 10 times more in Korean than other languages, especially Hungarian.
+(NN,PRP,VBZ,RB): Japanese and danish users prefer to use this.
+ 
+Penalty for UNSEEN PoS-ngrams is too high and most of the time the correct answer was filtered at the first round, which means we never had a chance to calculate the similarity of distribution for the candidate. We also tried to apply different cutoffs in the experiment, which means we only count some frequent PoS-grams (without considering rare PoS n-grams) and avoid the possible spikes of weights in the process of learning. We tried to focus on most frequent k PoS 4-grams (k=100, 500, 2000, 5000) and those 4-grams appeared in more than k different candidate languages (k=10,15,20). As mentioned before, UNSEEN PoS-ngrams has some power in deciding some candidates languages, but the thresholds we found seems not as good as we expected.
 
-Penalty for UNSEEN PoS-ngrams is too high and most of the time the correct answer was filtered at the first round, which means we never had a chance to calculate the similarity of distribution for the candidate. To measure how ofter we throw away a correct answer, we eliminated all comments that contains unseen n-gram in the category of correct answer. After the tricky operation, we discarded about 3/4 of the available testing data, but we found a different result in the accuracy. In our tricky data, only 545 out of 2265 comments has unique candidate, and we got an accuracy of 78.41\% if the correct answer is not eliminated due to unseen PoS n-grams and probably compare between the candidate native language with US English. This phenomenon shows that the language model is reliable as long as we can calculate the distribution similarity. What's more, our model has a property of high precision and low recall. In our tricky data, the distribution of models output is:  
+\begin{table}[h]
+\begin{center}
+\small\addtolength{\tabcolsep}{-5pt}
+\begin{tabular}{|l|l|}
+\hline Accuracy & \bf 4-grams \\ \hline
+no cutoff  &  37.54\% \\
+most frequent 100 & 12.81\% \\
+most frequent 500 & 15.26\% \\
+most frequent 2000 & 21.76\% \\
+most frequent 5000 & 30.55\% \\
+appeared in 10 lang & 28.93\% \\
+appeared in 15 lang & 32.27\% \\
+appeared in all lang & 30.14\% \\
+\hline
+\end{tabular}
+\end{center}
+\caption{\label{font-table} Result of different cutoffs on PoS-ngrams }
+\end{table}
+
+To measure how ofter we throw away a correct answer, we eliminated all comments that contains unseen n-gram in the category of correct answer. After the tricky operation, we discarded about 3/4 of the available testing data, but we found a different result in the accuracy. In our tricky data, only 545 out of 2265 comments has unique candidate, and we got an accuracy of 78.41\% if the correct answer is not eliminated due to unseen PoS n-grams and probably compare between the candidate native language with US English. This phenomenon shows that the language model is reliable as long as we can calculate the distribution similarity. What's more, our model has a property of high precision and low recall. In our tricky data, the distribution of models output is:  
 
 \begin{table}[h]
 \begin{center}
@@ -409,7 +432,7 @@ Russian & 86 & 109 & 64 \\
 
 while in the real data, we get hundreds of non-native speakers falling into the category of US English native speaker since this class covers more n-grams than the others.
 
-In order to deal with unseen ngrams, we apply another method that can estimate the occurrence of a certain 4-gram by cascade down to using Trigram/Bigram/Unigram. But these attempts seems not Performing well, with only trigram/bigram estimation, the accuracy drop down to 34.5\%, and using only bigram/unigram estimation provide an accuracy of 29.7\%. If we apply both two strategies, the accuracy is 31.3\%. For most of the cases, cascade helps reduce the number of we predict some one as US English native, but it seldom solve the problem if the appearance of n-grams is really small, for instance, in Korean and Japanese.  
+In order to deal with unseen ngrams, we apply another method that can estimate the occurrance of a certain 4-gram by cascade down to using Trigram/Bigram/Unigram. But these attempts seems not Performing well, with only trigram/bigram estimation, the accuracy drop down to 34.5\%, and using only bigram/unigram estimation provide an accuracy of 29.7\%. If we apply both two strategies, the accuracy is 31.3\%. For most of the cases, cascade helps reduce the number of we predict some one as US English native, but it seldom solve the problem if the appearance of n-grams is really small, for instance, in Korean and Japanese. 
 
 \section{Conclusions and Future Work}
 As our results shows promising applications and trends using Wikipedia data to solve hard problems in robust means, there are many paths to improve our results and discover more interesting insights. We are looking to see the effect of increasing fluency of the non native speakers on their English language usage.
