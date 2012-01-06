@@ -8,6 +8,9 @@ import logging
 from pylab import *
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
+from cfm_all import *
+from copy import deepcopy
+import util
 
 __author__ = "Rami Al-Rfou"
 __email__ = "rmyeid@gmail.com"
@@ -68,14 +71,14 @@ G_TRAIN = [
 ]
 
 G_CFM = [
-[   9.4,   3.1,   2.5,   2.2,   2.8 ],
-[   3.1,   8.3,   3.1,   3.3,   2.3 ],
-[   3.0,   3.1,   8.5,  3.0,   2.5 ],
-[   2.0,   2.6,   2.7,  10.4,  2.4 ],
-[   2.6,   2.0,   2.3,   2.1, 11.0,]
+[   11.1,   2.7,   2.3,   1.9,   2.0 ],
+[   2.3,  9.3,   2.9,   2.1,   3.3 ],
+[   2.8,   3.7,   8.6,  2.1,   2.8 ],
+[   2.0,   2.3,   2.2,  11.1,  2.5 ],
+[   2.2,   2.8,   2.3,   1.9, 10.7,]
 ]
 
-G_Labels = ['EN-US', 'NGermanic', 'Roman', 'Uralic', 'Asian']
+G_Labels = ['Asian', 'Germanic', 'Romance', 'Slavic', 'Uralic']
 
 G_Lambda = [30, 100, 10, 100]
 G_data_size = 81927
@@ -126,7 +129,7 @@ def main(options, args):
   ylabel('Accuracy')
   p_train = ax2.plot(P_DATA, P_TRAIN)
   legend( (p_train), ('Training',), 'upper right', shadow=True)
-  ax2.set_title('Learning Curves for Popular Languages Experiment')
+#  ax2.set_title('Learning Curves for Popular Languages Experiment')
   ax1.set_xlabel('Percentage of data')
   savefig('popular_lc.png', format='png')
 
@@ -142,7 +145,7 @@ def main(options, args):
   ylabel('Accuracy')
   g_train = ax2.plot(G_DATA, G_TRAIN)
   legend( (g_train), ('Training',), 'upper right', shadow=True)
-  ax2.set_title('Learning Curves for Languages Families Experiment')
+#  ax2.set_title('Learning Curves for Languages Families Experiment')
   ax1.set_xlabel('Percentage of data')
   savefig('family_lc.png', format='png')
 
@@ -158,62 +161,16 @@ def main(options, args):
   ylabel('Accuracy')
   f_train = ax2.plot(F_DATA, F_TRAIN)
   legend( (f_train), ('Training',), 'upper right', shadow=True)
-  ax2.set_title('Learning Curves for Native vs Non-Native Writers Experiment')
+#  ax2.set_title('Learning Curves for Native vs Non-Native Writers Experiment')
   ax1.set_xlabel('Percentage of data')
   savefig('native_lc.png', format='png')
 
-  fig = figure()
-  title('Confusion Matrix for Popular Languages Experiment')
-  ax = fig.add_subplot(111)
-  ax.set_aspect(1)
-  res = ax.imshow(np.array(P_CFM), cmap=plt.cm.jet, interpolation='nearest')
-  width = len(P_CFM)
-  height = len(P_CFM[0])
-  for x in xrange(width):
-    for y in xrange(height):
-      ax.annotate(str(P_CFM[x][y]), xy=(y, x), 
-                    horizontalalignment='center',
-                    verticalalignment='center')
-  cb = fig.colorbar(res)
-  xticks(range(width), P_Labels)
-  yticks(range(height), P_Labels)
-  savefig('popular_cfm.png', format='png')
-  
-  fig = figure()
-  title('Confusion Matrix for Native Experiment')
-  ax = fig.add_subplot(111)
-  ax.set_aspect(1)
-  res = ax.imshow(np.array(F_CFM), cmap=plt.cm.jet, interpolation='nearest')
-  width = len(F_CFM)
-  height = len(F_CFM[0])
-  for x in xrange(width):
-    for y in xrange(height):
-      ax.annotate(str(F_CFM[x][y]), xy=(y, x), 
-                    horizontalalignment='center',
-                    verticalalignment='center')
-  cb = fig.colorbar(res)
-  xticks(range(width), F_Labels)
-  yticks(range(height), F_Labels)
-  savefig('native_cfm.png', format='png')
-
-  fig = figure()
-  title('Confusion Matrix for Languages Families Experiment')
-  ax = fig.add_subplot(111)
-  ax.set_aspect(1)
-  res = ax.imshow(np.array(G_CFM), cmap=plt.cm.jet, interpolation='nearest')
-  width = len(G_CFM)
-  height = len(G_CFM[0])
-  for x in xrange(width):
-    for y in xrange(height):
-      ax.annotate(str(G_CFM[x][y]), xy=(y, x), 
-                    horizontalalignment='center',
-                    verticalalignment='center')
-  cb = fig.colorbar(res)
-  xticks(range(width), G_Labels)
-  yticks(range(height), G_Labels)
-  savefig('family_cfm.png', format='png')
-
-  show()
+  fig1 = util.clustered_cfm(P_CFM, P_Labels, 'row = reference; col=given', 'popular_cfm.png')
+  fig2 = util.clustered_cfm(F_CFM, F_Labels, 'row = reference; col=given', 'native_cfm.png')
+  fig3 = util.clustered_cfm(G_CFM, G_Labels, 'row = reference; col=given', 'family_cfm.png')
+  fig4 = util.clustered_cfm(CFM_ALL, LANGS_ALL, 'row = reference; col=given', 'all_cfm.png')
+#  fig4.xticks(0,[])
+#  show()
 
 if __name__ == "__main__":
   parser = OptionParser()
