@@ -10,8 +10,10 @@ import sys
 from collections import namedtuple, OrderedDict
 import json
 import re
-import pdb
+from util import pool_map 
 from parse_talk import parse_page
+from nltk.tag.senna import POSTagger
+
 
 __author__ = "Rami Al-Rfou"
 __email__ = "rmyeid@gmail.com"
@@ -111,8 +113,50 @@ class WikipediaDB(object):
     query = "select * from %s;" % table
     for page in self._execute(query):
       yield TalkPage(*page)
-    
-    
+
+  def get_comment_by_autoid(self, autoid):
+    query = "select * from comments where autoid=%s;" % autoid
+    pages = [page for page in self._execute(query)]
+    if len(pages) > 1:
+      logging.debug("we recieved %d pages for id=%s", len(pages), autoid)
+    return Comment(*pages[0])
+
+users_langs = None
+
+def get_details(comment_details):
+  category_level = {'User_en-5', 'User_en-4', 'User_en-3', 'User_en-2', 'User_en-1', 'User_en-0'}
+  comment, row = comment_details
+  if not row:
+    return tuple()
+  autoid, text, lang = comment
+  if lang == 'User_en-us':
+    level = 'User_en-N'
+  else:
+    langs = set(users_langs[row.user_name])
+    common_levels = langs.intersection(category_level)
+    level = list(common_levels)[0] if common_levels else "UNK"
+    if level == 'User_en-N':
+      level = "UNK"
+  return (autoid, text, lang, row.user_name, row.page_id, row.page_title,
+                     row.time_stamp, level)
+
+
+def add_columns_to_data():
+  global users_langs
+  logging.info("Started running")
+  data = json.load(open(options.filename, 'rb'))
+  users_langs = json.load(open('users_languages_dictionary.json', 'rb'))
+  db = WikipediaDB()
+  rows = [db.get_comment_by_autoid(str(comment[0])) for comment in data]
+  db.close()
+  logging.info("Fetched all the data needed from the database")
+  combined = zip(data, rows)
+  new_data = filter(lambda x: x, [get_details(e) for e in combined])
+  logging.info("Number of original comments is %d", len(data))
+  logging.info("Number of new comments is %d", len(new_data))
+  json.dump(new_data, open(options.filename+'.details', 'wb'), indent=2)
+
+
 def main(options, args):
   total_comments = 0
   total_pages = 0
@@ -170,4 +214,4 @@ if __name__ == "__main__":
 
   numeric_level = getattr(logging, options.log.upper(), None)
   logging.basicConfig(level=numeric_level, format=LOG_FORMAT)
-  main(options, args)
+  add_columns_to_data()

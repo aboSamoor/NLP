@@ -1,7 +1,6 @@
 file=acl2012
 all:
 		pdflatex $(file).tex
-		pdflatex $(file).tex
 		bibtex $(file)
 		pdflatex $(file).tex
 		pdflatex $(file).tex

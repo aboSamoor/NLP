@@ -99,9 +99,9 @@ class Scikit(MultiClassifierI):
     self._map = {}
     self._rmap = {}
     C = 1.0/lambda_
-    self._clf = linear_model.LogisticRegression(C=C)
+#    self._clf = linear_model.LogisticRegression(C=C)
 #    self._clf = svm.SVC(C=C)
-#    self._clf = svm.LinearSVC(C=C)
+    self._clf = svm.LinearSVC(C=C)
     self._fx = None
 
   def _fsets2dataset(self, samples):
