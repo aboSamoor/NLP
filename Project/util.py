@@ -94,7 +94,7 @@ class Serialized(object):
 
 
 def pool_map(func, list_, num_processors=2):
-  num_processors  = cpu_count()/3
+  num_processors  = cpu_count()/4
   p = Pool(num_processors)
   results = p.map(func, list_)
   p.close()

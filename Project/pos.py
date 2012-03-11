@@ -39,12 +39,12 @@ def tokenize(text):
 
 def process(labeled_comments):
   global i
-  ids, comments, labels = zip(*labeled_comments)
+  ids, comments, langs, users, page_ids, page_titles, times, levels = zip(*labeled_comments)
   tokenized_comments = [tokenize(comment) for comment in comments]
   tagged_comments = tagger.corpus_tag(tokenized_comments)
-  results = zip(tagged_comments, labels)
+  results = zip(ids, tagged_comments, langs, users, page_ids, page_titles, times, levels)
   lock.acquire()
-  i += len(labels)
+  i += len(ids)
   lock.release()
   percentage = '%.6f' % (i/float(len(samples)))
   print percentage
@@ -62,14 +62,15 @@ def clean_samples(labeled_samples):
 def main(options, args):
   global samples
   samples = json.load(open(options.filename, 'r'))
+  logging.info("Samples are loaded")
   p = Pool(cpu_count()-1)
-  size = len(samples)/(25*cpu_count())
+  size = len(samples)/(15*cpu_count())
   splitted_samples = [samples[i:i+size] for i in range(0, len(samples), size)]
   results = []
-#  for samples_ in splitted_samples:
-#    results.append(process(samples_))
   results = p.map(process, splitted_samples)
-  results = sum(results, [])
+  logging.info("Results are computed, to be merged")
+  results = [r for partial in results for r in partial]
+  logging.info("Results are merged, to be dumped")
   json.dump(results, open(options.filename+'.pos', 'w'))
 
 

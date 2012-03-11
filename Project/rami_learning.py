@@ -23,7 +23,7 @@ from numpy import array
 from math import log
 from re import compile
 import util
-from demonym import *
+from demonyms import *
 from ml import *
 from util import *
 
@@ -207,6 +207,18 @@ def language_distribution(n, training):
         language_dist[language]["w_sizes"][i].update(nltk.ngrams(sizes, i))
   return language_dist
 
+def split_to_files(samples):
+  names = ['%s/%s_comments.txt'%(util.CACHE_FOLDER, lang) for lang  in LANGUAGES]
+  LANG_FILES = dict(zip(LANGUAGES, [open(name, 'w') for name in names]))
+  logging.info("The following files are created:\n%s" % '\n'.join(names))
+  for sample in samples:
+    comment, label = sample
+    text = '\n'.join([' '.join([w for w,t in sent]) for sent in comment])
+    text = text.encode('utf-8')
+    LANG_FILES[label].write(text)
+  for lang in LANG_FILES:
+    LANG_FILES[lang].close()
+  logging.info("Comments were dumped into files.")
 
 def featureset(sample):
   comment, label = sample
@@ -316,6 +328,9 @@ def stats(samples):
     logging.info("%s\t%f" % (key, dist[key]/float(size)))
 
 
+def extract_fields(samples):
+  return [tuple([sample[i] for i in FIELDS]) for sample in samples]
+
 def main(options, args):
 
   logging.info("Experiment started")
@@ -324,9 +339,9 @@ def main(options, args):
 
   logging.info("Eperiment mode is %s" % NAME)
 
-  TRAIN = json.load(open(TRAIN_FILE, 'r'))
-  DEV  = json.load(open(DEV_FILE, 'r'))
-  TEST = json.load(open(TEST_FILE, 'r'))
+  TRAIN = extract_fields(json.load(open(TRAIN_FILE, 'r')))
+  DEV  = extract_fields(json.load(open(DEV_FILE, 'r')))
+  TEST = extract_fields(json.load(open(TEST_FILE, 'r')))
   logging.info("Data is loaded")
 
   TRAIN = prune_data(TRAIN) 
@@ -336,9 +351,15 @@ def main(options, args):
   
   TAGS = list(set([tag for comment,label in DEV for statement in comment for word,tag in statement]))
   LANGUAGES = list(set([label for comment,label in TRAIN]))
+  
+  if SPLIT:
+    logging.info("Comments will be dumped into files")
+    split_to_files(TRAIN)
+    logging.info("Program will exit")
+    sys.exit()
+
   GRAMS = language_distribution('Model_TRAIN', n, TRAIN)
-
-
+  
   logging.info("Ngrams calculated up to: %d\n" % n)
   logging.info("ACCEPTED_LANGUAGES: %s\n" % str(MAP.keys()))
   logging.info("LANGUAGES_MAP: %s\n" % str(MAP))

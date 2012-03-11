@@ -1,7 +1,5 @@
 %
-% File acl2012.tex
-%
-% Contact: Maggie Li (cswjli@comp.polyu.edu.hk), Michael White (mwhite@ling.osu.edu)
+% File acl20ying a ontact: Maggie Li (cswjli@comp.polyu.edu.hk), Michael White (mwhite@ling.osu.edu)
 %%
 %% Based on the style files for ACL2008 by Joakim Nivre and Noah Smith
 %% and that of ACL2010 by Jing-Shin Chang and Philipp Koehn
@@ -29,44 +27,147 @@
 \begin{document}
 \maketitle
 \begin{abstract}
-This paper presents the first attempt (up to our knowledge) to classify English writing styles of non native speakers on this scale. Classifying day to day written language of writers with different backgrounds covering various areas of topics is a real challenge.The paper proposes simple machine learning algorithms and simple to generate features to solve the challenge. Relying on the scale of the data available from large sources of knowledge like Wikipedia. We believe such sources of data are crucial to generate robust solutions for the web with high accuracy and easy to deploy in practice. The paper achieves 74\% accuracy classifying native versus non native speakers writing styles.
+This paper presents the first attempt (up to our knowledge) to classify English
+writing styles on this wide scale. The corpus that is extracted from Wikipedia
+represents a day to
+day language written by authors with different backgrounds and skills covering
+various categories of topics. To solve such hard problem, we propose simple
+machine learning algorithms and easy to generate features.
+The scale of the data available from large sources of knowledge like Wikipedia
+makes it possible to generate robust solutions for the web with high accuracy
+and easy to deploy in practice.
+The paper achieves 74\% accuracy classifying native versus non native speakers
+writing styles and offers a publicly accessible corpus for further studies of
+various writing styles.
 
-Moreover, the paper shows some interesting observations on the similarity between different languages measured by the similarity of their users English writing styles. This technique could be used to support some well known linguistic theories about the languages families and their origins.
+Moreover, this paper makes interesting observations on the similarity between
+different languages measured by the similarity of their users' writing styles.
+This technique can be used to show some well known linguistic theories about
+languages, as in grouping them into families according to their origins and
+development history.
+
 \end{abstract}
 
-
-
 \section{Introduction}
-The internet nowadays is more diverse than any time before. The introduction of social networks changed the distribution of users; the majority of users are not any more native English speakers. This puts more challenges on the services providers to accommodate the English content to the new users. This paper tackles the challenge of identifying the native language of the user from their writing styles. We believe this task is crucial as a first step in the development of many useful applications.
+With the introduction of social networks and media, the content on the internet 
+has become more diverse than ever and the distribution of users has changed.
+Learning languages and improving the fluency of non native speakers has
+become more important. Since English is the universal language of communication, we chose the English
+non native speakers to understand the influence of their
+native languages on their English writing styles.
 
-Wikipedia is well known source of knowledge. Recently, it is used extensively to help solving different information retrieval tasks especially the ones that involves semantic aspects. The use of Wikipedia can be expanded to help the common NLP tools to perform better with the help of the diversity of topics and authors of Wikipedia pages. The large size of encyclopedia can help in the data sparsity problem. Moreover, the sustained growth of Wikipeida content of can bring performance gains with no much additional complexity costs.
+We believe the task of identifying the user's native language serves an essential
+step to advance the state of art of the applications in the areas of misspelling and grammatical errors
+correction, paraphrasing and speech recognition.
 
-The detection of the writer's native language can be helpful in application that targets new learners of English as a second language. Moreover, it could be adapted to transcribed text to help better voice recognition application when dealing with the non native speakers accents.
+Wikipedia is a well known source of knowledge. Recently, it is has been used extensively
+to help solving different information retrieval tasks, especially the ones
+that involves semantic aspects\cite{Milne08aneffective}. The use of Wikipedia can be expanded to help the
+common NLP tools to perform better; the size of the data and the diversity of
+authors and topics plays a key role. Moreover, the sustained growth of Wikipedia
+content of can bring performance gains with no much additional complexity costs.
+
+This paper is structured as follows. In section \ref{rwork} we discuss the
+literature of identifying users' native languages from their English writing
+styles. Section \ref{wiki} discusses various aspects of Wikipedia content and
+the methodology used to generate the corpus used in the following experiments.
+Section \ref{exps} describes the setup of the experiments conducted on the
+Wikipedia extracted corpus and the results of each. In section \ref{conc} we
+give conclusions regarding the presented results and comments on possible future
+work aspects. 
+
 
 \section{Related Work}
-The first work related with native language identification is that of \cite{koppel2005automatically}, in which they tried profiling anonymous authors with their native languages. Totally five different groups of English authors (whose native languages are Russian, Bulgarian, French, and Spanish) were picked from the first version of {\em International Corpus of Learner English} (ICLE) in their experiments. By applying a combined feature sets, including function words, character n-grams, part-of-speech bi-grams and spelling mistakes, they gained an accuracy of 65\% if considered style features only. These results suggested that syntactic features are valuable when trying to categorize authors by their native languages. Also in \cite {koppel2005determining}, they considered not only letter n-grams and function words but errors and idiosyncrasies, including orthography errors, syntax errors, neologisms and part-of-speech bigrams errors. Finally the accuracy on classifying authors from five different countries can reach above 80\%. \cite {argamon2009automatically} concluded some more important features in the task of profiling authors of an anonymous text.
+\label{rwork}
+The first work related with native language identification is that of
+\cite{koppel2005automatically}, in which they tried profiling anonymous authors
+with their native languages. Five groups of non native speakers; Russian,
+Bulgarian, Czech, French, and Spanish were picked from the first version of {\em
+International Corpus of Learner English} (ICLE). By applying a combined feature
+sets, including function words, character n-grams, part-of-speech bi-grams and
+spelling mistakes, they gained an accuracy of 65\% if considered style features
+only. These results suggested that syntactic features are valuable when trying
+to categorize authors by their native languages. Also in \cite
+{koppel2005determining}, they considered not only letter n-grams and function
+words but errors and idiosyncrasies, including orthography errors, syntax
+errors, neologisms and part-of-speech bigrams errors. Finally the accuracy on
+classifying authors with the five different native languages can reach above 80\%.
+\cite{argamon2009automatically} concluded some more important features in the task of profiling authors of an anonymous text.
 
-Similar work was done by \cite {tsur2007using}. They focused on the relationships between choice of words in second language writing and the frequency of native language syllables, also known as the phonology of native languages. \cite {estival2007author} studied a wide range of lexical and document structure features in their native languages classification task. And \cite {zheng2003authorship}, though they did not directly conduct related experiments on nationality detection, they provide some features of style marks that could be used in the task of judging one's native languages. Besides, \cite {gamon2004linguistic} analyzed the power of some general features under different frequency cutoffs. But none of these measured the usefulness of syntactic features under a general condition for the task of native language detection.
+Similar work has been done by \cite {tsur2007using}. They focused on the
+relationships between choice of words in second language writing and the
+frequency of native language syllables, also known as the phonology of native
+languages. \cite {estival2007author} studied a wide range of lexical and
+document structure features in their native languages classification task. And
+\cite {zheng2003authorship}, though they did not directly conduct related
+experiments on nationality detection, they provided some features of style marks
+that could be used in the task of judging one's native language. Besides, \cite
+{gamon2004linguistic} analyzed the power of some general features under
+different frequency cutoffs. However, none of these measured the usefulness of
+syntactic features under a general condition for the task of native language
+detection.
 
-\cite {wong2009contrastive} replicated the work of \cite {koppel2005automatically} and dug more in the field of syntactic structures. They experimented on three selected syntactic errors, which are commonly observed in non-native English Users, including subject-verb disagreement, mismatch of noun-number pairs and wrong usage of determiners and the best overall accuracy was 73.71\% on the second version of ICLE across seven languages. \cite {wong2010parser} first considered applying parser features in the task--though these features are hard to extract compared with other syntactic features. What's more, \cite {wong-dras:2011:EMNLP} continued their works in native language detection and focused more on the influence of syntactic structures, specifically parsing trees. They tried to exploiting the parsing structures by applying Standford parsers and C\&J parsers with different parameters to certain corpus, and capture the number of usages of some distinguishable rules. Their results and observations suggested that the syntactic structures would be supportive in detecting native languages and improving the performance of existing classifiers.
+\cite {wong2009contrastive} replicated the work of \cite
+{koppel2005automatically} and dug more in the field of syntactic structures.
+They experimented on three selected syntactic errors, which are commonly
+observed in non native English users, including subject-verb disagreement,
+mismatch of noun-number pairs and wrong usage of determiners and the best
+overall accuracy was 73.71\% on the second version of ICLE across seven
+languages. \cite{wong2010parser} first considered applying parser features in
+the task though these features are hard to extract compared with other
+syntactic features. In \cite {wong-dras:2011:EMNLP}, they continued their
+work in native language detection and focused more on the influence of
+syntactic structures, specifically parsing trees. They tried to exploiting the
+parsing structures by applying Standford parser and C\&J parsers with different
+parameters to certain corpus, and capture the frequent patterns of usage of some
+distinguishable rules. Their results and observations suggested that the
+syntactic structures would be supportive in detecting native languages and
+improving the performance of existing classifiers.
 
-Different from previous works mentioned above, our task runs on a totally different platform--wikipedia. Our goal is to find out the influence of one's native languages on the style of his/her writings under the circumstance of talking and discussion. With the help of huge amount of available data, we can try exploring the statistics features of a certain languages using similar features in \cite {koppel2005automatically} and \cite {wong-dras:2011:EMNLP}, as well as the distribution of part-of-speech(PoS) n-grams and word n-grams.      
+Different from the previous works mentioned above, our task targets totally
+different corpus, Wikipedia. Wikipedia represents more challenging content as the
+authors are more technically advanced in their language skills since it is not only written by
+new learners of English. Moreover, most of the contributions to Wikipedia are
+small in size, either by modifying a developing article or commenting on
+a mature one. Our goal here, is to find out the influence of one's native
+languages on the style of his/her writings under the circumstance of talking and
+discussion.
 
 \section{Wikipedia}
-Wikipedia is the de facto source of knowledge for internet users. Wikipedia is the 5\textsuperscript{th} most popular website according to Google ranking. For researchers Wikipedia is a giant linguistic and social jar of experiments. The richness of the website content that is written by users from different backgrounds represents a robust sample of the current languages usage by native and non native speakers.
+\label{wiki}
+Wikipedia is the de facto source of knowledge for internet users. Wikipedia is
+the 6\textsuperscript{th} most popular website according to Alexa ranking.
+For researchers Wikipedia is a giant linguistic and social jar of experiments.
+The richness of the website content that is written by users from different backgrounds represents a robust sample of the current languages usage by native and non native speakers.
 
 With more than 90 thousand active users and 4.4 million article, the content of Wikipedia spans large number of topics. The diversity of authors beside the records of versions that are stored in a database of revisions presents a realistic source of text. Such resource presents a higher quality of data that is not achievable by the other commonly used sources of text as news, blogs and scientific articles.
 
-Such successful website has a complex database structure to serve its users. Therefore, extracting data is a complex process. Our goal is to identify the languages skills of the users and collect their contributions. To achieve the first task Wikipedia has an information box called \emph{Babel} that users can add voluntarily to their profile pages to state their skills in different languages. Figure \ref{babel} shows a user who identified her native language and her skills in 3 other non native languages on a scale of 1-5. This info box is indexed in the database as categories.
+Such successful website has a complex database structure to serve its users.
+Therefore, extracting data is a complex process. Our goal is to identify the
+languages skills of the users and collect their contributions. To achieve the
+first task Wikipedia has an information box called \emph{Babel} that users can
+add voluntarily to their profile pages to state their skills in different
+languages. Figure \ref{babel} shows a user who identified her native language
+and her skills in 3 other non native languages on a scale of 0-5. This info box
+is indexed in the database as a category.
 
 \begin{figure}[htp]
 \centering
-\includegraphics[scale=0.60]{babel}
+\includegraphics[scale=0.60]{babel} 
 \caption{Wikipedia languages skills info box (Babel)}
 \label{babel}
 \end{figure}
 
-The task of collecting the contributions of a specific user is more complex procedure. The diffs between Wikipedia pages revisions has to be generated and linked back to the user table. However, the resources we have to process such huge amount of data did not allow us to do that\footnote{Recent efforts were made to generate the diffs \url{http://dumps.wikimedia.org/other/diffdb/}}. Instead we noticed that Wikipedia pages have accompanying discussion pages where users discuss different aspects of the articles. In those pages the tradition is to sign the user comments with a signature that link back to the user. Figure \ref{obama} shows an example of those comments. The style of writing of those talk pages are less formal and technical than the main pages of Wikipedia and has more conversational stylistic features.
+The task of collecting the contributions of a specific user is more complex
+procedure. The diffs between Wikipedia pages revisions has to be generated and
+linked back to the user table. The resources we have are not sufficient enough to process such
+huge amount of data\footnote{Recent efforts were
+made to generate the diffs \url{http://dumps.wikimedia.org/other/diffdb/}}.
+Instead we noticed that Wikipedia pages have accompanying discussion pages where
+users discuss different aspects of the articles. In those pages the tradition is
+that the user will sign his own comments with a signature that link back to the
+user page. Figure \ref{obama} shows an example of those comments. The style of writing of those
+talk pages are less formal and technical than the main pages of Wikipedia and has more conversational stylistic features.
 
 \begin{figure*}[Htp]
 \centering
@@ -75,9 +176,12 @@ The task of collecting the contributions of a specific user is more complex proc
 \label{obama}
 \end{figure*}
 
-The recommended signatures patters are limited, however, in practice the users use various patterns that makes the detection rules ambiguous. The detection algorithm implemented relies on complex regular expressions and applies best effort strategy.
+The recommended signatures patters are limited, however, in practice the users
+use various patterns that makes the detection rules ambiguous. The detection
+algorithm that we implemented relies on complex regular expressions and applies best effort strategy.
 
 \section{Experiments}
+\label{exps}
 We found that around 60 thousands users specified their language skills. Figure \ref{native_dist} shows that the percentage of users who claimed that their native language is English is around 47\% of English Wikipedia users base.
 
 \begin{figure}[htp]
@@ -86,13 +190,24 @@ We found that around 60 thousands users specified their language skills. Figure 
 \label{native_dist}
 \end{figure}
 
-We parsed the talk pages with the \verb+namespace=1+, they represents more than 80\% of the talk pages, which produced around 12 million comments. Only 2.4 million comment we could identify them to belong to users with known language skills. As not all the users contributes to the talk pages, the number of users who makes at least one comment in the extracted comments is around 30 thousand user.
+We parsed the talk pages with the \verb+namespace=1+, they represent more than
+80\% of the talk pages. The total number of comments found in those pages is
+around 12 million comment. Only 2.4 million comment has users with identified language skills. As not all the users contributes to the talk pages, the number of users who makes at least one comment in the extracted comments is around 30 thousand user.
 
-Since we have large number of comments and users, we can apply more filtering to increase the quality of data gathered. Therefore, we applied the following filtering mechanisms:
+Since we have large number of comments and users, we can apply more filtering to
+increase the quality of the data gathered. Therefore, we applied the following filtering mechanisms:
 \begin{itemize}
 \item Users are grouped according to their native languages. Users of the most frequent 20 native languages are selected.
-\item Only US English native speakers are selected. This made to avoid the variations of standard English among different dialects and countries. Moreover, this step helps to filter the non native speakers who are proficient in English so they choose the general Native English category in their skills.
-\item Users who specified more than one native language are excluded. This step helps to avoid unrealistic scenarios where users claim to be native in more than one language.
+\item English native speakers can identify more information by specifying which
+variation of English they are familiar with. Only US English native speakers are
+selected. This decision was made to avoid the variations of standard English
+among different dialects and countries. Moreover, this step helps us to filter
+the non native speakers who are proficient in English so they choose the general
+Native English category in their skills instead of specifying their skill to be
+at level 5.
+\item Users who specified more than one native language are excluded. This step
+helps us to avoid unrealistic scenarios where users claim to be native in many
+languages.
 \end{itemize}
 
 The new data set after the filtering is composed of 9857 user and 589228 comments.
@@ -104,7 +219,8 @@ The following experiments are conducted under the following conditions:
 \item Proper nouns are replaced by their tags to avoid bias toward topics.
 \item Non ASCII characters are replaced by a special character to avoid bias toward non English characters usage in the comments.
 \item The classifier has balanced number of comments for each of its classes. Therefore, the two baseline classifiers; the most common label and the random classifier will have an accuracy of \verb+1/number of classes+.
-\item The data set is split to 70\% training set, 10\% development set and 20\% testing set.
+\item The data set is split to 70\% training set, 10\% development set and 20\%
+as a testing set.
 \end{itemize}
 
 \subsection{Features}
@@ -308,7 +424,7 @@ Figure \ref{comb_lc} shows a typical over fitting situation where the more data 
 
 
 \section{Writing Styles}
-
+\label{conc}
 Another type of Experiment focuses on the usage of PoS n-grams, trying to distinguish users by comparing the similarity of the PoS-ngrams distribution with a candidate language. We use the same definition of "similarity" as mentioned in the previous section and \cite {alpaydin2004introduction} and build a 20-classifier based on the whole training data (524 MB). After training our language model, The accuracy was around 95\% on training data.
 
 The two baselines we selected are: Baseline-Max and Baseline-Random. Where in Baseline-Max we simply put each user into the category of native US English speaker since this class has the largest size with the
