@@ -206,7 +206,7 @@ the non native speakers who are proficient in English so they choose the general
 Native English category in their skills instead of specifying their skill to be
 at level 5.
 \item Users who specified more than one native language are excluded. This step
-helps us to avoid unrealistic scenarios where users claim to be native in many
+helps us to avoid improbable scenarios where users claim to be native in many
 languages.
 \end{itemize}
 
@@ -226,12 +226,12 @@ as a testing set.
 \subsection{Features}
 The comments of the training set is grouped by class and the following frequency distributions are calculated for each class:
 \begin{itemize}
-\item 1-4 grams over the comments words.
-\item 1-4 grams over the comments characters.
+\item 1-4 grams over the comments' words.
+\item 1-4 grams over the comments' characters.
 \item 1-4 grams over the part of speech tags.
 \end{itemize}
 
-For each comment ($C$) similarity measurements ($Sim$) are calculated against each n-gram frequency distribution ($f(n)$) according to the following equations:
+For each comment ($C$), similarity measurements ($Sim$) are calculated against each \verb+n-gram+ frequency distribution ($f(n)$) according to the following equations:
 
 \[
   count(x, f, n) = \left\{ 
@@ -246,7 +246,9 @@ For each comment ($C$) similarity measurements ($Sim$) are calculated against ea
 
 Therefore, if the problem has six classes, this will generate $6*3*4 = 72$ features.
 
-Other features also includes the relative frequency of each of the stop words to the size of the comments. The 125 stop words are extracted from the NLTK stop words corpus. Moreover, the average size of words, the size of the comments and the average number of sentences are also included.
+Other features also includes the relative frequency of each of the stop words to
+the size of the comments. The 125 stop words are extracted from the NLTK stop
+words corpus\cite{nltk}. Moreover, the average size of words, the size of the comments and the average number of sentences are also included.
 
 
 \subsection{Native vs Non Native Experiment}
@@ -261,15 +263,15 @@ This experiment aims to detect the non native speakers comments. All users with 
 \end{figure}
 
 
-The most informative features are words trigrams, words uni-gram, words bi-gram, words 4-gram, characters bigrams, PoS tags 4-grams, ordered by their importance. Table \ref{table:nonnative} shows the most correlated grams and speakers from the important features.
+The most informative features are words trigrams, words uni-gram, words bi-gram, words 4-gram, characters bigrams, PoS tags 4-grams, ordered by their importance. Table \ref{table:nonnative} shows the most correlated grams with native languages.
 
 Some of the grams indicate possible common grammatical mistakes in the Non native speakers writing styles. Unigrams over words shows that non native speakers tend to use earth instead of Earth. Characters bigram shows that separating the comma from the previous word by a space is common usage of punctuation for non native speakers.
 The usage of articles is a problematic issue for non native speakers, in the words 4-grams we can see using the article \emph{the} before a proper noun is a frequent pattern, this trend of using \emph{the} more than needed can be confirmed by the characters bigrams where \emph{th} appears. Word trigram shows that native speakers use \emph{the} correctly in \emph{in the middle} where we expect non native speakers to use \emph{in middle}.
-Moreover, from the characters bigrams non native speakers use \emph{at} less than the native speakers which could suggest that they misuse the other articles where \emph{at} should be used. Characters bigrams shows a trend in spelling mistakes, where non native speakers type single \emph{l} instead of \emph{ll}. Another spelling trend is the less usage of apostrophes \emph{'}, this can be traced by the more frequent usage of \emph{am} in words unigrams for non native speakers and the appearance of \emph{don't} in the words 4-grams for native speakers.
+Moreover, from the characters bigrams non native speakers use \emph{at} less than the native speakers which could suggest that they misuse the other articles where \emph{at} should be used. Characters bigrams shows a trend in spelling mistakes, where non native speakers type single \emph{l} instead of \emph{ll}. Another spelling usage trend is the less frequent usage of apostrophes \emph{'}, this can be traced by the more frequent usage of \emph{am} in words unigrams for non native speakers and the appearance of \emph{don't} in the words 4-grams for native speakers.
 
 \begin{table}[htp]
 \begin{tabular}{l|ll}
-	Feature & Speaker  & Gram
+	\textbf{Feature} & \textbf{Speaker}  & \textbf{Gram}
 	\\\hline
 	Words & Non Native &article on NNP\\
 	 Trigrams& &  \verb+comma+ you have\\
@@ -302,12 +304,43 @@ Moreover, from the characters bigrams non native speakers use \emph{at} less tha
 	
 \end{tabular}
 \label{table:nonnative}
-\caption{Correlated grams and speakers for detecting non native speakers experiment}
+\caption{Correlated grams and native languages for detecting non native speakers experiment}
 \end{table}
 
+The more fluent the speaker is in English the closer his/her writing
+style to the native speaker style. To test our basic intuition,
+we have to take advantage of the specific language fluency levels that the speaker can choose
+from the available Wikipedia Babel box categories. We designed two different
+variations of the previous experiment. In the first we limited
+the non native speakers category to the speakers with basic skills in English,
+those who correspond to \verb+User_en-0+ to \verb+User_en-2+ of Wikipedia categories.
+While the second is composed of the more advanced non native speakers with
+English levels ranging from \verb+User_en-3+ to \verb+User_en-5+.
+Figure \ref{fluency} shows the classifier error rate in the three previous
+variations.
+
+\begin{figure}[htp]
+\centering
+\includegraphics[scale=0.50]{fluency.png}
+\caption{Classification error rate against non native speakers with different
+skills.}
+\label{fluency}
+\end{figure}
+
+The increase of the error rate of classification confirms our intuition.
+Moreover, it increases our confidence in the information the users mention in
+their profiles regarding their language skills.
 
 \subsection{Frequent Languages Experiment}
-This experiment aims to classify the speakers of the most frequent native languages. Six languages are selected US-EN, German, Spanish, French, Russian and Dutch. Figure \ref{pop_cfm} shows the confusion matrix of the logistic regression classifier. The data set size is about 150K comment. We can see clearly that the Russian users are the easiest to identify. Moreover, the classifier is the most confused distinguishing the German and the Dutch users with error $>2.0\%$ and to a less degree between (EN-US, French). These numbers confirm a basic intuition that the languages that have geographical proximity will have more borrowed words and grammars between them. This will affect their speakers writing styles in English.
+This experiment aims to classify the comments written by the speakers of the most frequent native languages.
+Six languages are selected US-EN, German, Spanish, French, Russian and Dutch.
+Figure \ref{pop_cfm} shows the confusion matrix of the logistic regression
+classifier. The data set size is about 150K comment. We can see clearly that the
+Russian users are the easiest to identify. Moreover, the classifier is the most
+confused distinguishing the German and the Dutch users with error $>2.0\%$ and
+to a less degree between (EN-US, French). These numbers confirm a basic
+intuition that the languages that have geographical proximity will have more
+borrowed words and grammars between them. And accordingly this will affect their speakers writing styles in English.
 
 \begin{figure}[htp]
 \centering
@@ -316,12 +349,16 @@ This experiment aims to classify the speakers of the most frequent native langua
 \label{pop_cfm}
 \end{figure}
 
-The most informative features are ordered as the following, words bigrams, words unigrams, words trigrams, characters 4 grams, words 4 grams, PoS tags 4-grams. We can see that the features of the longer grams become less informative once we increased the number of classes given to the classes. The increasing importance of shorter grams of words can indicate the influence of the topic of the comment on the classification.
+The most informative features are ordered as the following, words bigrams, words
+unigrams, words trigrams, characters 4 grams, words 4 grams, PoS tags 4-grams.
+We can see that the features of the longer grams become less informative once we
+increased the number of classes given to the classifier. The increasing
+importance of shorter grams of words may indicate the influence of the topic of the comment on the classification.
 
 
 \begin{table}[htp]
 \begin{tabular}{l|ll}
-	Feature & Speaker  & Gram
+	\textbf{Feature} & \textbf{Speaker}  & \textbf{Gram}
 	\\\hline
 	Words & Russian &prove that\\
 	 Bigrams& German& you leave\\
@@ -361,16 +398,11 @@ Table \ref{table:results} shows that the best accuracy that the classifier achie
 
 The confusion in classifying Dutch and German users suggests that there is a similarity between groups of languages. Referring to the linguistics research history of classifying the languages into families according to similar features and development history, this experiment tries to put such grouping under the microscope. 18 languages are grouped into 5 families as the following:
 \begin{itemize}
-\item Germanic\\
-German, Dutch, Norwegian, Swedish, Danish.
-\item Romanace\\
-Spanish, French, Portuguese, Italian.
-\item Uralic \\
-Finnish, Hungarian.
-\item Asian\\
-Mandarin, Cantonese, Japanese, Korean.
-\item Slavic
-Russian, Polish
+\item \textbf{Germanic}: German, Dutch, Norwegian, Swedish, Danish.
+\item \textbf{Romanace}: Spanish, French, Portuguese, Italian.
+\item \textbf{Uralic}: Finnish, Hungarian.
+\item \textbf{Asian}: Mandarin, Cantonese, Japanese, Korean.
+\item \textbf{Slavic}: Russian, Polish
 \end{itemize}
 
 Figure \ref{fam_cfm} shows the that the Slavic and Asian native speakers has a clear style of writing English that is easy to detect relatively. The highest confusion in classification is between the Germanic and Romance languages, where geographical proximity plays a role in similarity. With the same reasoning we can see the confusion between Germanic and Uralic languages.
@@ -382,17 +414,32 @@ Figure \ref{fam_cfm} shows the that the Slavic and Asian native speakers has a c
 \label{fam_cfm}
 \end{figure}
 
-Taking the opposite approach, we took the 20 languages and applied the same classification procedure over the new classes. The accuracy of the classifier is 25\%. However, considering the confusion matrix as a similarity matrix, we applied the affinity propagation clustering algorithm over the confusion matrix and the clusters that are formed are the following:
+Taking the opposite approach, we took the speakers of the most frequent 20
+native languages and applied the same classification procedure over the new
+classes. The accuracy of the classifier is 25\%. However, considering the
+confusion matrix as a similarity matrix, we applied the affinity propagation
+clustering algorithm\cite{sklearn} over the confusion matrix and the clusters that are formed are the following:
 \begin{itemize}
-\item Cluster 1: Arabic.
-\item Cluster 2: Danish, Dutch, Finnish, Norwegian, Swedish.
-\item Cluster 3: French, Italian, Portuguese, Spanish.
-\item Cluster 4: Mandarin, Cantonese, Japanese, Korean.
-\item Cluster 5: Russian, Polish, Turkish.
-\item Cluster 6: Hungarian, German, US-EN.
+\item \textbf{Cluster 1}: Arabic.
+\item \textbf{Cluster 2}: Danish, Dutch, Finnish, Norwegian, Swedish.
+\item \textbf{Cluster 3}: French, Italian, Portuguese, Spanish.
+\item \textbf{Cluster 4}: Mandarin, Cantonese, Japanese, Korean.
+\item \textbf{Cluster 5}: Russian, Polish, Turkish.
+\item \textbf{Cluster 6}: Hungarian, German, US-EN.
 \end{itemize}
 
-The above clusters supports to large extent the literature classification of languages.
+The above clusters support to large extent the literature classification of
+languages. Scrutinizing the 4-grams POS tags reveals more interesting
+observations regarding non native speakers usages for English. For example,
+in Portuguese speakers comments the pattern \verb+IN DT NN PRP+ appears 0.13\%
+of the total number of their comments POS 4-grams. However, it only appears
+0.04\% in the Korean speakers comments. Another notice can be detected by
+looking at the \verb+NN NN IN DT+'s usage in Portuguese and Polish comments. It
+appears 0.15\% in the former POS 4-grams but only 0.05\% in the later. Arabic
+speakers tend to use the pattern \verb+TO DT NN IN+ so frequently that it
+appears 0.11\% while it is less than 0.06\% for other speakers POS 4-gram
+distributions. Finally, Japanese and Danish speakers slightly prefer the pattern
+\verb+NN PRP VBZ RB+ more than others.
 
 \subsection{Learning Algorithms}
 
@@ -410,7 +457,12 @@ Table \ref{table:results} shows negligible differences between different learnin
 \label{table:results}
 \end{table}
 
-Figure \ref{comb_lc} shows a typical over fitting situation where the more data you have the better the classifier can achieve. And here the size of data that can be extracted from Wikipedia plays a significant role to boosts the accuracy from 37\% to over 50\% in case of the Frequent languages and Families of languages experiments. The growth of the curve is similar to $\sqrt{x}$ curve which is similar to the growth of seen tokens in language models for English. This suggests the importance of the increase in the coverage of unique words to the performance of the classifier.
+Figure \ref{comb_lc} shows a typical over fitting situation where the more data
+you have the better the classifier can achieve. And here the size of data that
+can be extracted from Wikipedia plays a significant role to boosts the accuracy
+from 37\% to over 50\% in case of the Frequent languages and Families of
+languages experiments. This confirms the importance of the coverage of words in
+the language models that supplies the frequency counts on the performance of the classifier.
 
 \begin{figure}[htp]
 \centering
@@ -420,147 +472,24 @@ Figure \ref{comb_lc} shows a typical over fitting situation where the more data 
 \end{figure}
 
 
-
-
-
-\section{Writing Styles}
-\label{conc}
-Another type of Experiment focuses on the usage of PoS n-grams, trying to distinguish users by comparing the similarity of the PoS-ngrams distribution with a candidate language. We use the same definition of "similarity" as mentioned in the previous section and \cite {alpaydin2004introduction} and build a 20-classifier based on the whole training data (524 MB). After training our language model, The accuracy was around 95\% on training data.
-
-The two baselines we selected are: Baseline-Max and Baseline-Random. Where in Baseline-Max we simply put each user into the category of native US English speaker since this class has the largest size with the
-probability of about 34\%. And in Baseline-Random, we choose randomly from 20 candidate languages. The expectation of accuracy should be 5\%.
-
-Since there exist some PoS-ngrams that might never appear in the training data, which means we have not seen such PoS-ngram before in any of the candidate category. We simply define these comments as "zero comments"--it is not precise to measure the value of these unseen PoS n-grams and we should put it into the category of native US English speaker to maximize the probability of correctness. Also, it sounds not reasonable if we consider comments that are too short considering the experiments mentioned in \cite {wagner2009judging}. So we first try on comments that has more than 100 PoS n-grams, which means the comment has more than (100+n-1) tokens.
-
-\begin{table}[h]
-\begin{center}
-\small\addtolength{\tabcolsep}{-5pt}
-\begin{tabular}{|l|l|l|l|l|}
-\hline & \bf Overall & \bf Nonzero & \bf Available & \bf Nonzero \\ 
-& \bf Accuracy & \bf Accuracy & \bf Count & \bf Count \\ \hline
-4-grams & 35.47\% & 37.54\%  & 13067 & 8196 \\
-tri-grams & 25.99\% & 25.96\% & 13209 & 13162 \\
-bi-grams & 15.77\% & 15.77\%  & 13375 & 13375\\
-uni-grams & 9.93\% & 9.93\%  & 13569 & 13569 \\
-baseline-max & 34.03\% & 34.01\% & 13067 & 13067 \\
-baseline-random & 5.00\% & 4.96\% & 13067 & 13067 \\
-bag-of-words & 33.98\% & N/A & 13569 & 0 \\
-\hline
-\end{tabular}
-\end{center}
-\caption{\label{font-table} Result of Different PoS n-grams. }
-\end{table}
-
-It is clear from the table that the higher level of PoS n-grams, the higher the accuracy. But The experiment on 4-grams shows that about 1/3 of these comments contains unseen PoS 4-grams. Our training data contains more than 300,000 possible 4-grams in the category of native US English speaker, but that is still not enough, not to mention that the category of Korean native speaker only covers 18,000 4-grams. It seems that a good estimation of unseen PoS 4-grams can boost the accuracy. What's more, even word-unigram suffers the same problem (each comment with length greater than 100 had a token that was not seen anywhere before).
-
-Another experiment runs on different length of comments using 4-grams, and we believe that the longer the comments, the higher the accuracy.
-
-\begin{table}[h]
-\begin{center}
-\small\addtolength{\tabcolsep}{-5pt}
-\begin{tabular}{|l|l|l|l|l|}
-\hline Accuracy & \bf len$>$50 & \bf len$>$100 & \bf len$>$150 & \bf len$>$200 \\ \hline
-4-grams & 33.18\% & 35.47\%  & 36.61\% & 37.57\% \\
-baseline-max & 34.03\% & 34.01\% & 34.36\% & 35.04\% \\
-baseline-random & 5.00\% & 4.96\%  & 5.01\% & 4.27\%\\
-\hline
-\end{tabular}
-\end{center}
-\caption{\label{font-table} Result of varies length overall. }
-\end{table}
-
-\begin{table}[h]
-\begin{center}
-\small\addtolength{\tabcolsep}{-5pt}
-\begin{tabular}{|l|l|l|l|l|}
-\hline Accuracy & \bf len$>$50 & \bf len$>$100 & \bf len$>$150 & \bf len$>$200 \\ \hline
-4-grams & 33.40\% & 37.54\%  & 40.07\% & 42.24\% \\
-baseline-max  & 34.75\% & 35.26\% & 36.15\% & 37.85\% \\
-baseline-random  & 5.04\% & 4.67\% & 4.97\% & 4.22\% \\
-\hline
-\end{tabular}
-\end{center}
-\caption{\label{font-table} Result of varies length on nonzero data. }
-\end{table}
-
-We also observed that, some frequently appeared 4-grams occupy rather different portion in the distribution. For instance,
-(IN,DT,NN,PRP): 0.13\% in Portugal but only 0.04\% in Korean
-(NN,NN,IN,DT): 0.15\% in Portugal but only 0.05\% in Polish
-(TO,DT,NN,IN): 0.11\% in Arabic while less than 0.06\% in any other languages
-(',',CD,NNP,CD) and (NNP,CD,-LRB-,NNP): Appeared 10 times more in Korean than other languages, especially Hungarian.
-(NN,PRP,VBZ,RB): Japanese and danish users prefer to use this.
  
-Penalty for UNSEEN PoS-ngrams is too high and most of the time the correct answer was filtered at the first round, which means we never had a chance to calculate the similarity of distribution for the candidate. We also tried to apply different cutoffs in the experiment, which means we only count some frequent PoS-grams (without considering rare PoS n-grams) and avoid the possible spikes of weights in the process of learning. We tried to focus on most frequent k PoS 4-grams (k=100, 500, 2000, 5000) and those 4-grams appeared in more than k different candidate languages (k=10,15,20). As mentioned before, UNSEEN PoS-ngrams has some power in deciding some candidates languages, but the thresholds we found seems not as good as we expected.
-
-\begin{table}[h]
-\begin{center}
-\small\addtolength{\tabcolsep}{-5pt}
-\begin{tabular}{|l|l|}
-\hline Accuracy & \bf 4-grams \\ \hline
-no cutoff  &  37.54\% \\
-most frequent 100 & 12.81\% \\
-most frequent 500 & 15.26\% \\
-most frequent 2000 & 21.76\% \\
-most frequent 5000 & 30.55\% \\
-appeared in 10 lang & 28.93\% \\
-appeared in 15 lang & 32.27\% \\
-appeared in all lang & 30.14\% \\
-\hline
-\end{tabular}
-\end{center}
-\caption{\label{font-table} Result of different cutoffs on PoS-ngrams }
-\end{table}
-
-To measure how ofter we throw away a correct answer, we eliminated all comments that contains unseen n-gram in the category of correct answer. After the tricky operation, we discarded about 3/4 of the available testing data, but we found a different result in the accuracy. In our tricky data, only 545 out of 2265 comments has unique candidate, and we got an accuracy of 78.41\% if the correct answer is not eliminated due to unseen PoS n-grams and probably compare between the candidate native language with US English. This phenomenon shows that the language model is reliable as long as we can calculate the distribution similarity. What's more, our model has a property of high precision and low recall. In our tricky data, the distribution of models output is:  
-
-\begin{table}[h]
-\begin{center}
-\small\addtolength{\tabcolsep}{-5pt}
-\begin{tabular}{|l|l|l|l|}
-\hline & \bf Actual & \bf Predicted & \bf Correct \\ 
-& \bf Occurrences & \bf Appearances & \bf Prediction \\ \hline
-Deutsch & 181 & 150 & 78 \\
-Japanese & 2 & 2 & 2 \\
-Polish & 10 & 19 & 9 \\
-Mandarin & 14 & 18 & 12 \\
-Turkish & 4 & 4 & 4 \\
-Finnish & 1 & 3 & 1 \\
-Cantonese & 1 & 1 & 1 \\
-Arabic & 14 & 13 & 13 \\
-Danish & 11 & 18 & 10 \\
-Hungarian & 4 & 4 & 4 \\
-Spanish & 86 & 90 & 39 \\
-Portuguese & 172 & 169 & 169 \\
-French & 32 & 44 & 12 \\
-Netherlands & 103 & 203 & 73 \\
-US English & 1485 & 1329 & 1232 \\
-Korean & 0 & 0 & 0 \\
-Italian & 11 & 14 & 11\\
-Swedish & 36 & 50 & 30 \\
-Norwegian & 12 & 25 & 12 \\
-Russian & 86 & 109 & 64 \\
-\hline
-\end{tabular}
-\end{center}
-\caption{\label{font-table} Statistics on tricky data }
-\end{table}
-
-
-while in the real data, we get hundreds of non-native speakers falling into the category of US English native speaker since this class covers more n-grams than the others.
-
-In order to deal with unseen ngrams, we apply another method that can estimate the occurrance of a certain 4-gram by cascade down to using Trigram/Bigram/Unigram. But these attempts seems not Performing well, with only trigram/bigram estimation, the accuracy drop down to 34.5\%, and using only bigram/unigram estimation provide an accuracy of 29.7\%. If we apply both two strategies, the accuracy is 31.3\%. For most of the cases, cascade helps reduce the number of we predict some one as US English native, but it seldom solve the problem if the appearance of n-grams is really small, for instance, in Korean and Japanese. 
-
 \section{Conclusions and Future Work}
-As our results shows promising applications and trends using Wikipedia data to solve hard problems in robust means, there are many paths to improve our results and discover more interesting insights. We are looking to see the effect of increasing fluency of the non native speakers on their English language usage.
+\label{conc}
+As our results shows promising applications and trends using Wikipedia data to solve hard problems in robust means, there are many paths to improve our results and discover more interesting insights.
 
-Moreover, as the learning curves show, it worth the effort increasing the size of the data in order of magnitude by adding the Wikipedia diffs, especially the non minor ones, as another source of users contributions. Moreover, the minimum size of the comments affects the performance of our classifiers, the relation between the quality of the data used and the accuracy of the classification is another interesting aspect.
+Moreover, as the learning curves show, it worth the effort increasing the size
+of the data in order of magnitude by adding the Wikipedia diffs, especially the
+non minor ones, as it represents another source of users' contributions. Moreover, the minimum size of the comments affects the performance of our classifiers, the relation between the quality of the data used and the accuracy of the classification is another interesting aspect.
 
 The languages families experiments suggest the usefulness of using the English writing styles to define the similarities between different languages. This could lead to an interesting explanations and/or observations regarding the origins of some languages as Korean language which still a controversial topic.
 
 Another direction is to solve the over fitting problem in our learning algorithms by applying smarter feature selection and adding more distinguishing features.
 
 \section*{Acknowledgements}
-We would like to thank Steven Skiena for the discussion and the advice. This work will not be available without the computing resources offered by his lab. We are also indebted to the NLTK and the Sklearn teams for producing excellent NLP and machine learning resources.
+We would like to thank Steven Skiena for the discussion and the advice. This
+work will not be available without the computing resources offered by his lab.
+We are also indebted to the NLTK and the Sklearn teams for producing excellent
+NLP and machine learning software libraries.
 
 \bibliography{myrefs}{}
 \bibliographystyle{acl}
