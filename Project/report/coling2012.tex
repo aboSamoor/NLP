@@ -3,30 +3,24 @@
 %%
 %% Based on the style files for ACL2008 by Joakim Nivre and Noah Smith
 %% and that of ACL2010 by Jing-Shin Chang and Philipp Koehn
-\documentclass[11pt]{article}
-\usepackage{acl2012}
-\usepackage{times}
-\usepackage{latexsym}
+\documentclass[10pt,a5paper,twoside]{article}
+\usepackage{coling2012}
 \usepackage{amsmath}
-\usepackage{multirow}
 \usepackage{url}
-\usepackage{graphicx}
-\DeclareMathOperator*{\argmax}{arg\,max}
-\setlength\titlebox{6.5cm}    % Expanding the titlebox
+\usepackage{subfig}
 
 \title{Detecting English Writing Styles For Non Native Speakers}
 
-\author{Rami Al-Rfou', Yejin Choi \\
+\author{$Rami~Al-Rfou'~~~Yejin~Choi$ \\
   Department of Computer Science \\
   Stony Brook University \\
   NY 11794, USA \\
-  {\tt \{ralrfou, ychoi\}@cs.stonybrook.edu}}
+  \texttt{ \{ralrfou, ychoi\}@cs.stonybrook.edu}}
 
-\date{1/6/2012}
 
 \begin{document}
 \maketitle
-\begin{abstract}
+\abstractEn{
 This paper presents the first attempt (up to our knowledge) to classify English
 writing styles on this wide scale. The corpus that is extracted from Wikipedia
 represents a day to
@@ -38,15 +32,16 @@ makes it possible to generate robust solutions for the web with high accuracy
 and easy to deploy in practice.
 The paper achieves 74\% accuracy classifying native versus non native speakers
 writing styles and offers a publicly accessible corpus for further studies of
-various writing styles.
-
-Moreover, this paper makes interesting observations on the similarity between
+various writing styles. Moreover, this paper makes interesting observations on the similarity between
 different languages measured by the similarity of their users' writing styles.
 This technique can be used to show some well known linguistic theories about
 languages, as in grouping them into families according to their origins and
-development history.
+development history.}
 
-\end{abstract}
+%TODO
+\keywordsEn{bla, bla}
+
+\newpage
 
 \section{Introduction}
 With the introduction of social networks and media, the content on the internet 
@@ -74,7 +69,7 @@ the methodology used to generate the corpus used in the following experiments.
 Section \ref{exps} describes the setup of the experiments conducted on the
 Wikipedia extracted corpus and the results of each. In section \ref{conc} we
 give conclusions regarding the presented results and comments on possible future
-work aspects. 
+work aspects.
 
 
 \section{Related Work}
@@ -87,35 +82,35 @@ International Corpus of Learner English} (ICLE). By applying a combined feature
 sets, including function words, character n-grams, part-of-speech bi-grams and
 spelling mistakes, they gained an accuracy of 65\% if considered style features
 only. These results suggested that syntactic features are valuable when trying
-to categorize authors by their native languages. Also in \cite
-{koppel2005determining}, they considered not only letter n-grams and function
+to categorize authors by their native languages. Also in \cite{koppel2005determining},
+they considered not only letter n-grams and function
 words but errors and idiosyncrasies, including orthography errors, syntax
 errors, neologisms and part-of-speech bigrams errors. Finally the accuracy on
 classifying authors with the five different native languages can reach above 80\%.
 \cite{argamon2009automatically} concluded some more important features in the task of profiling authors of an anonymous text.
 
-Similar work has been done by \cite {tsur2007using}. They focused on the
+Similar work has been done by \cite{tsur2007using}. They focused on the
 relationships between choice of words in second language writing and the
 frequency of native language syllables, also known as the phonology of native
-languages. \cite {estival2007author} studied a wide range of lexical and
+languages. \cite{estival2007author} studied a wide range of lexical and
 document structure features in their native languages classification task. And
 \cite {zheng2003authorship}, though they did not directly conduct related
 experiments on nationality detection, they provided some features of style marks
-that could be used in the task of judging one's native language. Besides, \cite
-{gamon2004linguistic} analyzed the power of some general features under
+that could be used in the task of judging one's native language. Besides, \cite {gamon2004linguistic}
+analyzed the power of some general features under
 different frequency cutoffs. However, none of these measured the usefulness of
 syntactic features under a general condition for the task of native language
 detection.
 
-\cite {wong2009contrastive} replicated the work of \cite
-{koppel2005automatically} and dug more in the field of syntactic structures.
+\cite{wong2009contrastive} replicated the work of \cite {koppel2005automatically}
+and dug more in the field of syntactic structures.
 They experimented on three selected syntactic errors, which are commonly
 observed in non native English users, including subject-verb disagreement,
 mismatch of noun-number pairs and wrong usage of determiners and the best
 overall accuracy was 73.71\% on the second version of ICLE across seven
 languages. \cite{wong2010parser} first considered applying parser features in
 the task though these features are hard to extract compared with other
-syntactic features. In \cite {wong-dras:2011:EMNLP}, they continued their
+syntactic features. In \cite{wong-dras:2011:EMNLP}, they continued their
 work in native language detection and focused more on the influence of
 syntactic structures, specifically parsing trees. They tried to exploiting the
 parsing structures by applying Standford parser and C\&J parsers with different
@@ -151,9 +146,9 @@ languages. Figure \ref{babel} shows a user who identified her native language
 and her skills in 3 other non native languages on a scale of 0-5. This info box
 is indexed in the database as a category.
 
-\begin{figure}[htp]
+\begin{figure}
 \centering
-\includegraphics[scale=0.60]{babel} 
+\includegraphics[scale=0.40]{babel} 
 \caption{Wikipedia languages skills info box (Babel)}
 \label{babel}
 \end{figure}
@@ -169,9 +164,9 @@ that the user will sign his own comments with a signature that link back to the
 user page. Figure \ref{obama} shows an example of those comments. The style of writing of those
 talk pages are less formal and technical than the main pages of Wikipedia and has more conversational stylistic features.
 
-\begin{figure*}[Htp]
+\begin{figure*}
 \centering
-\includegraphics[scale=0.285]{obama.png}
+\includegraphics[scale=0.225]{obama.png}
 \caption{Example of a conversation in the discussion pages}
 \label{obama}
 \end{figure*}
@@ -184,8 +179,9 @@ algorithm that we implemented relies on complex regular expressions and applies 
 \label{exps}
 We found that around 60 thousands users specified their language skills. Figure \ref{native_dist} shows that the percentage of users who claimed that their native language is English is around 47\% of English Wikipedia users base.
 
-\begin{figure}[htp]
-\includegraphics[scale=0.56]{chart_4.png}
+\begin{figure}
+  \centering
+\includegraphics[scale=0.36]{chart_4.png}
 \caption{Users distribution over native languages in English Wikipedia}
 \label{native_dist}
 \end{figure}
@@ -196,7 +192,7 @@ around 12 million comment. Only 2.4 million comment has users with identified la
 
 Since we have large number of comments and users, we can apply more filtering to
 increase the quality of the data gathered. Therefore, we applied the following filtering mechanisms:
-\begin{itemize}
+\begin{compactitem}
 \item Users are grouped according to their native languages. Users of the most frequent 20 native languages are selected.
 \item English native speakers can identify more information by specifying which
 variation of English they are familiar with. Only US English native speakers are
@@ -208,28 +204,28 @@ at level 5.
 \item Users who specified more than one native language are excluded. This step
 helps us to avoid improbable scenarios where users claim to be native in many
 languages.
-\end{itemize}
+\end{compactitem}
 
 The new data set after the filtering is composed of 9857 user and 589228 comments.
 
 \subsection{Setup}
 The following experiments are conducted under the following conditions:
-\begin{itemize}
+\begin{compactitem}
 \item The accepted comments have to have at least 20 tokens.
 \item Proper nouns are replaced by their tags to avoid bias toward topics.
 \item Non ASCII characters are replaced by a special character to avoid bias toward non English characters usage in the comments.
 \item The classifier has balanced number of comments for each of its classes. Therefore, the two baseline classifiers; the most common label and the random classifier will have an accuracy of \verb+1/number of classes+.
 \item The data set is split to 70\% training set, 10\% development set and 20\%
 as a testing set.
-\end{itemize}
+\end{compactitem}
 
 \subsection{Features}
 The comments of the training set is grouped by class and the following frequency distributions are calculated for each class:
-\begin{itemize}
+\begin{compactitem}
 \item 1-4 grams over the comments' words.
 \item 1-4 grams over the comments' characters.
 \item 1-4 grams over the part of speech tags.
-\end{itemize}
+\end{compactitem}
 
 For each comment ($C$), similarity measurements ($Sim$) are calculated against each \verb+n-gram+ frequency distribution ($f(n)$) according to the following equations:
 
@@ -255,9 +251,9 @@ words corpus\cite{nltk}. Moreover, the average size of words, the size of the co
 This experiment aims to detect the non native speakers comments. All users with native language other than English are placed into the same category. The number of comments used is around 322K comment. Table \ref{table:results} shows that the linear SVM classifier succeeds to reach $74.53\%$ accuracy. Figure \ref{non_cfm} shows the confusion matrix of the classifier.
 
 
-\begin{figure}[htp]
+\begin{figure}
 \centering
-\includegraphics[scale=0.45]{native_cfm.png}
+\includegraphics[scale=0.35]{native_cfm.png}
 \caption{Native vs Non Native speakers experiment confusion matrix}
 \label{non_cfm}
 \end{figure}
@@ -269,12 +265,14 @@ Some of the grams indicate possible common grammatical mistakes in the Non nativ
 The usage of articles is a problematic issue for non native speakers, in the words 4-grams we can see using the article \emph{the} before a proper noun is a frequent pattern, this trend of using \emph{the} more than needed can be confirmed by the characters bigrams where \emph{th} appears. Word trigram shows that native speakers use \emph{the} correctly in \emph{in the middle} where we expect non native speakers to use \emph{in middle}.
 Moreover, from the characters bigrams non native speakers use \emph{at} less than the native speakers which could suggest that they misuse the other articles where \emph{at} should be used. Characters bigrams shows a trend in spelling mistakes, where non native speakers type single \emph{l} instead of \emph{ll}. Another spelling usage trend is the less frequent usage of apostrophes \emph{'}, this can be traced by the more frequent usage of \emph{am} in words unigrams for non native speakers and the appearance of \emph{don't} in the words 4-grams for native speakers.
 
-\begin{table}[htp]
+\begin{table}[t]
+\begin{center}
+\subfloat[Correlated grams and native languages for detecting non native speakers experiment]{
 \begin{tabular}{l|ll}
 	\textbf{Feature} & \textbf{Speaker}  & \textbf{Gram}
 	\\\hline
 	Words & Non Native &article on NNP\\
-	 Trigrams& &  \verb+comma+ you have\\
+      Trigrams& &  \emph{comma} you have\\
 	 & Native& used in the\\
 	 &  &in the middle\\\hline
 	 
@@ -293,18 +291,52 @@ Moreover, from the characters bigrams non native speakers use \emph{at} less tha
 		&Native&NNP on NNP NNP\\
 		&&if you don't\\\hline
 
-	Characters&Non Native& th, e \verb+space+,\\
-	Bigrams && \verb+space+ \verb+comma+\\
+        Characters&Non Native& th, e \emph{space},\\
+          Bigrams && \emph{space} \emph{comma}\\
 	&Native& l-, at, ll\\\hline
 	
 	PoS 4-gram &Non Native& NNS \textbf{,} DT NN\\
 	&& MD VB VBN \textbf{,}\\
 	&Native& \textbf{,} PRP VBZ JJ\\
 	&& VBP NN IN NN\\
+      \end{tabular}
+    \label{table:nonnative}}
+\subfloat[Correlated grams and speakers for the most frequent languages experiment]{
+  \begin{tabular}{l|ll}
+	\textbf{Feature} & \textbf{Speaker}  & \textbf{Gram}
+	\\\hline
+	Words & Russian &prove that\\
+	 Bigrams& German& you leave\\
+	 & Spanish& to reveal\\
+	 & Dutch & reliance on\\\hline
+	 
+	Words &Dutch& refuting\\
+	   Unigrams&Spanish&timelines\\
+	    &German& tie\\\hline
+	    
+	Words 	&Russian& stick to what\\
+	Trigrams&Spanish& find out the\\
+	&Dutch& end up in\\\hline
+
+        Characters &French& hee \emph{space}\\
+	4-grams	&French&ownr\\
+		&Dutch&c/es\\
+	\hline
+
+	Words &French& NNP as far as\\
+	4-grams &German& the NNP who\\
+	&Spanish& ,etc),\\
+	&EN-US& Does anyone know if\\\hline
 	
+	PoS 4-gram &Dutch& RB CD -RRB- IN \\
+	&EN-US& VBD , RB DT\\
+	&EN-US& CD VBD NNS IN\\
+	&& \\
+	&& \\
+	&& \\
 \end{tabular}
-\label{table:nonnative}
-\caption{Correlated grams and native languages for detecting non native speakers experiment}
+\label{table:nonnative}}
+\end{center}
 \end{table}
 
 The more fluent the speaker is in English the closer his/her writing
@@ -319,7 +351,7 @@ English levels ranging from \verb+User_en-3+ to \verb+User_en-5+.
 Figure \ref{fluency} shows the classifier error rate in the three previous
 variations.
 
-\begin{figure}[htp]
+\begin{figure}
 \centering
 \includegraphics[scale=0.50]{fluency.png}
 \caption{Classification error rate against non native speakers with different
@@ -342,11 +374,10 @@ to a less degree between (EN-US, French). These numbers confirm a basic
 intuition that the languages that have geographical proximity will have more
 borrowed words and grammars between them. And accordingly this will affect their speakers writing styles in English.
 
-\begin{figure}[htp]
+\begin{figure}
 \centering
-\includegraphics[scale=0.45]{popular_cfm.png}
-\caption{Frequent languages experiment confusion matrix}
-\label{pop_cfm}
+\subfloat[Frequent languages experiment confusion matrix]{\label{pop_cfm}\includegraphics[scale=0.35]{popular_cfm.png}}
+\subfloat[Languages families experiment confusion matrix]{\label{fam_cfm}\includegraphics[scale=0.35]{family_cfm.png}}
 \end{figure}
 
 The most informative features are ordered as the following, words bigrams, words
@@ -355,78 +386,34 @@ We can see that the features of the longer grams become less informative once we
 increased the number of classes given to the classifier. The increasing
 importance of shorter grams of words may indicate the influence of the topic of the comment on the classification.
 
-
-\begin{table}[htp]
-\begin{tabular}{l|ll}
-	\textbf{Feature} & \textbf{Speaker}  & \textbf{Gram}
-	\\\hline
-	Words & Russian &prove that\\
-	 Bigrams& German& you leave\\
-	 & Spanish& to reveal\\
-	 & Dutch & reliance on\\\hline
-	 
-	Words &Dutch& refuting\\
-	   Unigrams&Spanish&timelines\\
-	    &German& tie\\\hline
-	    
-	Words 	&Russian& stick to what\\
-	Trigrams&Spanish& find out the\\
-	&Dutch& end up in\\\hline
-
-	Characters &French& hee \verb+space+\\
-	4-grams	&French&ownr\\
-		&Dutch&c/es\\
-	\hline
-
-	Words &French& NNP as far as\\
-	4-grams &German& the NNP who\\
-	&Spanish& ,etc),\\
-	&EN-US& Does anyone know if\\\hline
-	
-	PoS 4-gram &Dutch& RB CD -RRB- IN \\
-	&EN-US& VBD , RB DT\\
-	&EN-US& CD VBD NNS IN\\
-	
-\end{tabular}
-\label{table:nonnative}
-\caption{Correlated grams and speakers for the most frequent languages experiment}
-\end{table}
-
-
 Table \ref{table:results} shows that the best accuracy that the classifier achieved is 50.27\% with 77K comment used. 
 \subsection{Languages Families Experiment}
 
 The confusion in classifying Dutch and German users suggests that there is a similarity between groups of languages. Referring to the linguistics research history of classifying the languages into families according to similar features and development history, this experiment tries to put such grouping under the microscope. 18 languages are grouped into 5 families as the following:
-\begin{itemize}
+\begin{compactitem}
 \item \textbf{Germanic}: German, Dutch, Norwegian, Swedish, Danish.
 \item \textbf{Romanace}: Spanish, French, Portuguese, Italian.
 \item \textbf{Uralic}: Finnish, Hungarian.
 \item \textbf{Asian}: Mandarin, Cantonese, Japanese, Korean.
 \item \textbf{Slavic}: Russian, Polish
-\end{itemize}
+\end{compactitem}
 
 Figure \ref{fam_cfm} shows the that the Slavic and Asian native speakers has a clear style of writing English that is easy to detect relatively. The highest confusion in classification is between the Germanic and Romance languages, where geographical proximity plays a role in similarity. With the same reasoning we can see the confusion between Germanic and Uralic languages.
 
-\begin{figure}[htp]
-\centering
-\includegraphics[scale=0.45]{family_cfm.png}
-\caption{Languages families experiment confusion matrix}
-\label{fam_cfm}
-\end{figure}
 
 Taking the opposite approach, we took the speakers of the most frequent 20
 native languages and applied the same classification procedure over the new
 classes. The accuracy of the classifier is 25\%. However, considering the
 confusion matrix as a similarity matrix, we applied the affinity propagation
 clustering algorithm\cite{sklearn} over the confusion matrix and the clusters that are formed are the following:
-\begin{itemize}
+\begin{compactitem}
 \item \textbf{Cluster 1}: Arabic.
 \item \textbf{Cluster 2}: Danish, Dutch, Finnish, Norwegian, Swedish.
 \item \textbf{Cluster 3}: French, Italian, Portuguese, Spanish.
 \item \textbf{Cluster 4}: Mandarin, Cantonese, Japanese, Korean.
 \item \textbf{Cluster 5}: Russian, Polish, Turkish.
 \item \textbf{Cluster 6}: Hungarian, German, US-EN.
-\end{itemize}
+\end{compactitem}
 
 The above clusters support to large extent the literature classification of
 languages. Scrutinizing the 4-grams POS tags reveals more interesting
@@ -445,8 +432,9 @@ distributions. Finally, Japanese and Danish speakers slightly prefer the pattern
 
 Table \ref{table:results} shows negligible differences between different learning algorithms used in the experiments. 
 
-\begin{table}[htp]
-\begin{tabular}{l|ll}
+\begin{table}
+  \begin{center}
+  \begin{tabular}{l|ll}
 	Experiment & Logistic Regression & Linear SVM
 	\\\hline
 	Non Native & 74.45\% & 74.53\%\\
@@ -455,6 +443,7 @@ Table \ref{table:results} shows negligible differences between different learnin
 \end{tabular}
 \caption{Accuracy of classification using different learning algorithms.}
 \label{table:results}
+\end{center}
 \end{table}
 
 Figure \ref{comb_lc} shows a typical over fitting situation where the more data
@@ -464,7 +453,7 @@ from 37\% to over 50\% in case of the Frequent languages and Families of
 languages experiments. This confirms the importance of the coverage of words in
 the language models that supplies the frequency counts on the performance of the classifier.
 
-\begin{figure}[htp]
+\begin{figure}[t]
 \centering
 \includegraphics[scale=0.45]{combined_lc.png}
 \caption{Learning curves of the logistic regression algorithm.}
@@ -472,8 +461,7 @@ the language models that supplies the frequency counts on the performance of the
 \end{figure}
 
 
- 
-\section{Conclusions and Future Work}
+\section*{Conclusions and Future Work}
 \label{conc}
 As our results shows promising applications and trends using Wikipedia data to solve hard problems in robust means, there are many paths to improve our results and discover more interesting insights.
 
@@ -492,6 +480,6 @@ We are also indebted to the NLTK and the Sklearn teams for producing excellent
 NLP and machine learning software libraries.
 
 \bibliography{myrefs}{}
-\bibliographystyle{acl}
+\bibliographystyle{apa}
 
 \end{document}

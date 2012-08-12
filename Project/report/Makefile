@@ -1,4 +1,4 @@
-file=acl2012
+file=coling2012
 all:
 		pdflatex $(file).tex
 		bibtex $(file)
