@@ -7,7 +7,8 @@
 \usepackage{coling2012}
 \usepackage{amsmath}
 \usepackage{url}
-\usepackage{subfig}
+\usepackage{caption}
+\usepackage{subcaption}
 
 \title{Detecting English Writing Styles For Non Native Speakers}
 
@@ -39,119 +40,49 @@ languages, as in grouping them into families according to their origins and
 development history.}
 
 %TODO
-\keywordsEn{bla, bla}
+\keywordsEn{Stylometric Analysis}
 
 \newpage
 
 \section{Introduction}
-With the introduction of social networks and media, the content on the internet 
-has become more diverse than ever and the distribution of users has changed.
-Learning languages and improving the fluency of non native speakers has
-become more important. Since English is the universal language of communication, we chose the English
-non native speakers to understand the influence of their
-native languages on their English writing styles.
+Stylometric analysis has important applications that cover deception detection, authorship attribution and vandalism detection.
+Analyzing writing styles for non native speakers becomes harder due to the influence of the native language on the usage of the new learned language.
+Such influence introduces a bias in the orthographical and syntactic errors made by the author and the choice of vocabulary \cite{koppel2005automatically}.
 
-We believe the task of identifying the user's native language serves an essential
-step to advance the state of art of the applications in the areas of misspelling and grammatical errors
-correction, paraphrasing and speech recognition.
+Previous work focused on smaller datasets like {International Corpus of Learner English} (ICLE) \cite{koppel2005automatically, koppel2005determining, argamon2009automatically}. This choice limits the number of the native languages targeted and the set of topics covered.
+It also focuses on features that might only appear in the writing styles of students, like choice of words \cite{tsur2007using, zheng2003authorship, gamon2004linguistic}. Other syntactic features as subject-verb disagreement, mismatch of noun-number pairs and wrong usage of determiners were studied by \cite{wong2009contrastive}. More sophisticated syntactic features as parse trees were used by examining the frequency of the usage patterns of some distinguishable rules \cite{wong2010parser, wongdras2011EMNLP}.
 
-Wikipedia is a well known source of knowledge. Recently, it is has been used extensively
-to help solving different information retrieval tasks, especially the ones
-that involves semantic aspects\cite{Milne08aneffective}. The use of Wikipedia can be expanded to help the
-common NLP tools to perform better; the size of the data and the diversity of
-authors and topics plays a key role. Moreover, the sustained growth of Wikipedia
-content of can bring performance gains with no much additional complexity costs.
+Different from the previous works mentioned above, our task targets totally
+different corpus, Wikipedia. Wikipedia represents more challenging content as the
+authors are more technically advanced in their language skills. Moreover, most of the contributions to Wikipedia either modifications to existent pages or comments in the talk pages which both are small in size on average.
 
-This paper is structured as follows. In section \ref{rwork} we discuss the
-literature of identifying users' native languages from their English writing
-styles. Section \ref{wiki} discusses various aspects of Wikipedia content and
-the methodology used to generate the corpus used in the following experiments.
+This paper is structured as follows. Section \ref{wiki} discusses various aspects of Wikipedia content and
+the methodology used to extract the data used in the following experiments.
 Section \ref{exps} describes the setup of the experiments conducted on the
 Wikipedia extracted corpus and the results of each. In section \ref{conc} we
 give conclusions regarding the presented results and comments on possible future
 work aspects.
 
-
-\section{Related Work}
-\label{rwork}
-The first work related with native language identification is that of
-\cite{koppel2005automatically}, in which they tried profiling anonymous authors
-with their native languages. Five groups of non native speakers; Russian,
-Bulgarian, Czech, French, and Spanish were picked from the first version of {\em
-International Corpus of Learner English} (ICLE). By applying a combined feature
-sets, including function words, character n-grams, part-of-speech bi-grams and
-spelling mistakes, they gained an accuracy of 65\% if considered style features
-only. These results suggested that syntactic features are valuable when trying
-to categorize authors by their native languages. Also in \cite{koppel2005determining},
-they considered not only letter n-grams and function
-words but errors and idiosyncrasies, including orthography errors, syntax
-errors, neologisms and part-of-speech bigrams errors. Finally the accuracy on
-classifying authors with the five different native languages can reach above 80\%.
-\cite{argamon2009automatically} concluded some more important features in the task of profiling authors of an anonymous text.
-
-Similar work has been done by \cite{tsur2007using}. They focused on the
-relationships between choice of words in second language writing and the
-frequency of native language syllables, also known as the phonology of native
-languages. \cite{estival2007author} studied a wide range of lexical and
-document structure features in their native languages classification task. And
-\cite {zheng2003authorship}, though they did not directly conduct related
-experiments on nationality detection, they provided some features of style marks
-that could be used in the task of judging one's native language. Besides, \cite {gamon2004linguistic}
-analyzed the power of some general features under
-different frequency cutoffs. However, none of these measured the usefulness of
-syntactic features under a general condition for the task of native language
-detection.
-
-\cite{wong2009contrastive} replicated the work of \cite {koppel2005automatically}
-and dug more in the field of syntactic structures.
-They experimented on three selected syntactic errors, which are commonly
-observed in non native English users, including subject-verb disagreement,
-mismatch of noun-number pairs and wrong usage of determiners and the best
-overall accuracy was 73.71\% on the second version of ICLE across seven
-languages. \cite{wong2010parser} first considered applying parser features in
-the task though these features are hard to extract compared with other
-syntactic features. In \cite{wong-dras:2011:EMNLP}, they continued their
-work in native language detection and focused more on the influence of
-syntactic structures, specifically parsing trees. They tried to exploiting the
-parsing structures by applying Standford parser and C\&J parsers with different
-parameters to certain corpus, and capture the frequent patterns of usage of some
-distinguishable rules. Their results and observations suggested that the
-syntactic structures would be supportive in detecting native languages and
-improving the performance of existing classifiers.
-
-Different from the previous works mentioned above, our task targets totally
-different corpus, Wikipedia. Wikipedia represents more challenging content as the
-authors are more technically advanced in their language skills since it is not only written by
-new learners of English. Moreover, most of the contributions to Wikipedia are
-small in size, either by modifying a developing article or commenting on
-a mature one. Our goal here, is to find out the influence of one's native
-languages on the style of his/her writings under the circumstance of talking and
-discussion.
-
 \section{Wikipedia}
 \label{wiki}
-Wikipedia is the de facto source of knowledge for internet users. Wikipedia is
-the 6\textsuperscript{th} most popular website according to Alexa ranking.
-For researchers Wikipedia is a giant linguistic and social jar of experiments.
-The richness of the website content that is written by users from different backgrounds represents a robust sample of the current languages usage by native and non native speakers.
+Wikipedia is the de facto source of knowledge for internet users.
+ Recently, it is has been used extensively
+ to help solving different information retrieval tasks, especially the ones
+ that involves semantic aspects\cite{Milne08aneffective}. The use of Wikipedia can be expanded to help the
+ common NLP tools to perform better; the size of the data and the diversity of
+ authors and topics plays a key role. Moreover, the sustained growth of Wikipedia
+ content of can bring performance gains with no much additional complexity costs.
 
-With more than 90 thousand active users and 4.4 million article, the content of Wikipedia spans large number of topics. The diversity of authors beside the records of versions that are stored in a database of revisions presents a realistic source of text. Such resource presents a higher quality of data that is not achievable by the other commonly used sources of text as news, blogs and scientific articles.
+With more than 90 thousand active users and 4.4 million article for its English version, the content of Wikipedia spans large number of topics. The diversity of authors beside the records of versions that are stored in a database of revisions presents a realistic source of text. Such resource presents a higher quality of data that is not achievable by the other commonly used sources of text as news, blogs and scientific articles.
 
 Such successful website has a complex database structure to serve its users.
 Therefore, extracting data is a complex process. Our goal is to identify the
 languages skills of the users and collect their contributions. To achieve the
 first task Wikipedia has an information box called \emph{Babel} that users can
 add voluntarily to their profile pages to state their skills in different
-languages. Figure \ref{babel} shows a user who identified her native language
-and her skills in 3 other non native languages on a scale of 0-5. This info box
+languages. A user can identify her native language
+and her skills in non native languages on a scale of 0-5. This info box
 is indexed in the database as a category.
-
-\begin{figure}
-\centering
-\includegraphics[scale=0.40]{babel} 
-\caption{Wikipedia languages skills info box (Babel)}
-\label{babel}
-\end{figure}
 
 The task of collecting the contributions of a specific user is more complex
 procedure. The diffs between Wikipedia pages revisions has to be generated and
@@ -160,31 +91,13 @@ huge amount of data\footnote{Recent efforts were
 made to generate the diffs \url{http://dumps.wikimedia.org/other/diffdb/}}.
 Instead we noticed that Wikipedia pages have accompanying discussion pages where
 users discuss different aspects of the articles. In those pages the tradition is
-that the user will sign his own comments with a signature that link back to the
-user page. Figure \ref{obama} shows an example of those comments. The style of writing of those
+that the user will sign her own comments with a signature that link back to the
+user page.The style of writing of those
 talk pages are less formal and technical than the main pages of Wikipedia and has more conversational stylistic features.
 
-\begin{figure*}
-\centering
-\includegraphics[scale=0.225]{obama.png}
-\caption{Example of a conversation in the discussion pages}
-\label{obama}
-\end{figure*}
-
-The recommended signatures patters are limited, however, in practice the users
-use various patterns that makes the detection rules ambiguous. The detection
-algorithm that we implemented relies on complex regular expressions and applies best effort strategy.
-
-\section{Experiments}
+\section{Experimental Setup}
 \label{exps}
 We found that around 60 thousands users specified their language skills. Figure \ref{native_dist} shows that the percentage of users who claimed that their native language is English is around 47\% of English Wikipedia users base.
-
-\begin{figure}
-  \centering
-\includegraphics[scale=0.36]{chart_4.png}
-\caption{Users distribution over native languages in English Wikipedia}
-\label{native_dist}
-\end{figure}
 
 We parsed the talk pages with the \verb+namespace=1+, they represent more than
 80\% of the talk pages. The total number of comments found in those pages is
@@ -208,7 +121,6 @@ languages.
 
 The new data set after the filtering is composed of 9857 user and 589228 comments.
 
-\subsection{Setup}
 The following experiments are conducted under the following conditions:
 \begin{compactitem}
 \item The accepted comments have to have at least 20 tokens.
@@ -246,7 +158,7 @@ Other features also includes the relative frequency of each of the stop words to
 the size of the comments. The 125 stop words are extracted from the NLTK stop
 words corpus\cite{nltk}. Moreover, the average size of words, the size of the comments and the average number of sentences are also included.
 
-
+\section{Experiments}
 \subsection{Native vs Non Native Experiment}
 This experiment aims to detect the non native speakers comments. All users with native language other than English are placed into the same category. The number of comments used is around 322K comment. Table \ref{table:results} shows that the linear SVM classifier succeeds to reach $74.53\%$ accuracy. Figure \ref{non_cfm} shows the confusion matrix of the classifier.
 
@@ -266,77 +178,73 @@ The usage of articles is a problematic issue for non native speakers, in the wor
 Moreover, from the characters bigrams non native speakers use \emph{at} less than the native speakers which could suggest that they misuse the other articles where \emph{at} should be used. Characters bigrams shows a trend in spelling mistakes, where non native speakers type single \emph{l} instead of \emph{ll}. Another spelling usage trend is the less frequent usage of apostrophes \emph{'}, this can be traced by the more frequent usage of \emph{am} in words unigrams for non native speakers and the appearance of \emph{don't} in the words 4-grams for native speakers.
 
 \begin{table}[t]
-\begin{center}
-\subfloat[Correlated grams and native languages for detecting non native speakers experiment]{
-\begin{tabular}{l|ll}
-	\textbf{Feature} & \textbf{Speaker}  & \textbf{Gram}
-	\\\hline
-	Words & Non Native &article on NNP\\
-      Trigrams& &  \emph{comma} you have\\
-	 & Native& used in the\\
-	 &  &in the middle\\\hline
-	 
-	Words &Non Native& scene, To,\\
-	   Unigrams&&describing, earth,\\
-	    && referenced, am\\\hline
-	    
-	Words 	&Non Native& You have, we do\\
-	Bigrams&& of people\\
-	&Native& years of, I see\\
-	&&if you\\\hline
-
-	Words &Non Native& but I think that\\
-	4-grams	&&by the NNP of\\
-		&&( or at least\\
-		&Native&NNP on NNP NNP\\
-		&&if you don't\\\hline
-
-        Characters&Non Native& th, e \emph{space},\\
-          Bigrams && \emph{space} \emph{comma}\\
-	&Native& l-, at, ll\\\hline
-	
-	PoS 4-gram &Non Native& NNS \textbf{,} DT NN\\
-	&& MD VB VBN \textbf{,}\\
-	&Native& \textbf{,} PRP VBZ JJ\\
-	&& VBP NN IN NN\\
+  \begin{subtable}[]{0.5\textwidth}
+    \begin{tabular}{l|ll|}
+     \textbf{Feature} & \textbf{Speaker}  & \textbf{Gram}
+     \\\hline
+     Words & Non&article on NNP\\
+     Trigrams& Native&  \emph{comma} you have\\\cline{2-3}
+             & Native& used in the\\
+             &  &in the middle\\\hline
+       Words &Non& scene, To,\\
+     Unigrams&Native&describing, earth,\\\cline{2-3}
+             && referenced, am\\\hline
+      Words  &Non& You have, we do\\
+      Bigrams&Native& of people\\\cline{2-3}
+             &Native& years of, I see\\
+             &&if you\\\hline
+       Words &Non& but I think that\\
+     4-grams  &Native&by the NNP of\\\cline{2-3}
+              &&( or at least\\
+              &Native&NNP on NNP NNP\\
+              &&if you don't\\\hline
+    Characters&Non& th, e \emph{space},\\
+         Bigrams &Native& \emph{space} \emph{comma}\\ \cline{2-3}
+                 &Native& l-, at, ll\\\hline
+      PoS 4-gram &Non& NNS \textbf{,} DT NN\\
+                 &Native& MD VB VBN \textbf{,}\\\cline{2-3}
+                 &Native& \textbf{,} PRP VBZ JJ\\
+                 && VBP NN IN NN\\
       \end{tabular}
-    \label{table:nonnative}}
-\subfloat[Correlated grams and speakers for the most frequent languages experiment]{
-  \begin{tabular}{l|ll}
-	\textbf{Feature} & \textbf{Speaker}  & \textbf{Gram}
-	\\\hline
-	Words & Russian &prove that\\
-	 Bigrams& German& you leave\\
-	 & Spanish& to reveal\\
-	 & Dutch & reliance on\\\hline
-	 
-	Words &Dutch& refuting\\
-	   Unigrams&Spanish&timelines\\
-	    &German& tie\\\hline
-	    
-	Words 	&Russian& stick to what\\
-	Trigrams&Spanish& find out the\\
-	&Dutch& end up in\\\hline
+    \label{table:nonnative}
+    \caption{Non native speakers experiment}
+  \end{subtable}
+  \begin{subtable}[]{0.5\textwidth}
+   \begin{tabular}{l|ll}
+    \textbf{Feature} & \textbf{Speaker}  & \textbf{Gram}
+   \\\hline
+   Words & Russian &prove that\\
+    Bigrams& German& you leave\\
+    & Spanish& to reveal\\
+    & Dutch & reliance on\\\hline
 
-        Characters &French& hee \emph{space}\\
-	4-grams	&French&ownr\\
-		&Dutch&c/es\\
-	\hline
+   Words &Dutch& refuting\\
+      Unigrams&Spanish&timelines\\
+       &German& tie\\\hline
 
-	Words &French& NNP as far as\\
-	4-grams &German& the NNP who\\
-	&Spanish& ,etc),\\
-	&EN-US& Does anyone know if\\\hline
-	
-	PoS 4-gram &Dutch& RB CD -RRB- IN \\
-	&EN-US& VBD , RB DT\\
-	&EN-US& CD VBD NNS IN\\
-	&& \\
-	&& \\
-	&& \\
-\end{tabular}
-\label{table:nonnative}}
-\end{center}
+   Words&Russian& stick to what\\
+   Trigrams&Spanish& find out the\\
+   &Dutch& end up in\\\hline
+
+   Characters &French& hee \emph{space}\\
+   4-grams      &French&ownr\\
+&Dutch&c/es\\
+   \hline
+   Words &French& NNP as far as\\
+   4-grams &German& the NNP who\\
+   &Spanish& ,etc),\\
+   &EN-US& Does anyone know if\\\hline
+   PoS 4-gram &Dutch& RB CD -RRB- IN \\
+   &EN-US& VBD , RB DT\\
+   &EN-US& CD VBD NNS IN\\
+   && \\
+   && \\
+   && \\
+   \end{tabular}
+   \label{table:nonnative}
+   \caption{Most frequent languages experiment}
+   \end{subtable}
+\caption{Correlated grams and speakers of different native languages.}
 \end{table}
 
 The more fluent the speaker is in English the closer his/her writing
@@ -375,9 +283,19 @@ intuition that the languages that have geographical proximity will have more
 borrowed words and grammars between them. And accordingly this will affect their speakers writing styles in English.
 
 \begin{figure}
-\centering
-\subfloat[Frequent languages experiment confusion matrix]{\label{pop_cfm}\includegraphics[scale=0.35]{popular_cfm.png}}
-\subfloat[Languages families experiment confusion matrix]{\label{fam_cfm}\includegraphics[scale=0.35]{family_cfm.png}}
+
+\begin{subfigure}[]{0.5\textwidth}
+\includegraphics[scale=0.4]{popular_cfm.png}
+\caption{Frequent languages experiment}
+\label{pop_cfm}
+\end{subfigure}
+\begin{subfigure}[]{0.5\textwidth}
+\includegraphics[scale=0.4]{family_cfm.png}
+\caption{Languages families}
+\label{fam_cfm}
+\end{subfigure}
+
+\caption{Confusion Matrices of different Experiments}
 \end{figure}
 
 The most informative features are ordered as the following, words bigrams, words
@@ -398,7 +316,7 @@ The confusion in classifying Dutch and German users suggests that there is a sim
 \item \textbf{Slavic}: Russian, Polish
 \end{compactitem}
 
-Figure \ref{fam_cfm} shows the that the Slavic and Asian native speakers has a clear style of writing English that is easy to detect relatively. The highest confusion in classification is between the Germanic and Romance languages, where geographical proximity plays a role in similarity. With the same reasoning we can see the confusion between Germanic and Uralic languages.
+Figure \ref{fam_cfm} shows that the Slavic and Asian native speakers has a clear style of writing English that is easy to detect relatively. The highest confusion in classification is between the Germanic and Romance languages, where geographical proximity plays a role in similarity. With the same reasoning we can see the confusion between Germanic and Uralic languages.
 
 
 Taking the opposite approach, we took the speakers of the most frequent 20
