@@ -23,13 +23,14 @@
 \maketitle
 \abstractEn{
   Analyzing writing styles of non-native speakers is a challenging task. In this
-  paper, we analyze the discussion pages of English Wikipedia which are written by a
-  diverse group of users. Using learning algorithms we are able to detect
-  native speakers writing style with an accuracy of 74\%. Given the large number
-  of languages spoken natively by English Wikipedia users, we measure their similarities
-  by comparing the influence they have on English writing style of their
-  speakers. Our results show that languages known to have the same origin and
-  development path have similar footprint on the English writing style. To
+  paper, we analyze the comments written in the discussion pages of the English
+Wikipedia. Using learning algorithms we are able to detect
+  native speakers writing style with an accuracy of 74\%. Given the diversity of
+the English Wikipedia users and the large number
+  of languages they speak, we measure the similarities among their native
+languages
+  by comparing the influence they have on their English writing style. Our results show that languages known to have the same origin and
+  development path have similar footprint on their speakers' English writing style. To
   enable further studies, the dataset we extracted from Wikipedia will be made
   available publicly.
 }
@@ -40,22 +41,36 @@ Clustering}
 \newpage
 
 \section{Introduction}
-Stylometric analysis has important applications that cover deception detection, authorship attribution and vandalism detection.
-Analyzing writing styles for non-native speakers becomes harder due to the influence of the native language on the usage of the new learned language.
+Stylometric analysis has important applications that cover deception detection,
+authorship attribution and vandalism detection \cite{Harpalani, Ott}.
+Analyzing English writing styles for non-native speakers is harder task due to the
+influence of their native spoken languages.
 Such influence introduces a bias in the orthographical and syntactic errors made by the author and the choice of vocabulary \cite{koppel2005automatically}.
 
 Previous work focused on smaller datasets like {International Corpus of Learner English} (ICLE) \cite{koppel2005automatically, koppel2005determining, argamon2009automatically}. This choice limits the number of the native languages targeted and the set of topics covered.
 It also focuses on features that might only appear in the writing styles of
 students, like choice of words \cite{tsur2007using, zheng2003authorship,
-gamon2004linguistic}. Syntactic features as subject-verb disagreement, mismatch of noun-number pairs and wrong usage of determiners were studied by \cite{wong2009contrastive}. More sophisticated syntactic features as parse trees were used by examining the frequency of the usage patterns of some distinguishable rules \cite{wong2010parser, wongdras2011EMNLP}.
+gamon2004linguistic}. Syntactic features as subject-verb disagreement, mismatch
+of noun-number pairs and wrong usage of determiners were studied by
+\cite{wong2009contrastive}.
+\cite{wong2010parser, wongdras2011EMNLP} used more sophisticated syntactic features as parse trees
+to examine the frequency of some distinguishable grammar rules.
 
-Different from previous work, we use English Wikipedia talk pages to extract the comments made by the
-users. Our dataset is more challenging to study for the following reasons:
+Different from previous work, we use different data source. We extract users'
+comments from the English Wikipedia talk pages. Our dataset is more challenging to study for the following reasons:
 First, the comments tend to be shorter in length than the articles written by
 students learning English. Second, Wikipedia users represent more diverse
 spectrum of skills and the articles cover a wider range of topics. Moreover, the
 style of the comments is more conversational and loosely following proper English
-grammar. Finally, the number of the languages targeted is larger.
+grammar which limits the choice of features used. Finally, the number of the
+languages targeted is larger. Our contributions in this paper are:
+\begin{compactitem}
+\item Analyzing common mistakes and patterns of non-native
+speakers writing styles.
+\item Studying the similarities among languages through their effects on the
+English writing styles of their speakers.
+\item Publicly available dataset composed of English Wikipedia users' comments.
+\end{compactitem}
 
 This paper is structured as follows. Section \ref{wiki} discusses various
 aspects of Wikipedia's structure and content. Section \ref{setup} describes
@@ -110,11 +125,7 @@ description of the rules that were applied:
 \begin{compactitem}
 \item Only the users of the most frequent 20 native languages are considered.
 \item English native speakers can pick more fine grained categories. Only
-  speakers under the US English native category are selected. This decision was made to avoid the
-  variations of English writing style among different dialects and countries. Moreover,
-  this step helps us to filter the non-native speakers who are proficient in
-  English so they chose the general Native English category for their skills
-  instead of specifying their skill to be at level 5 fluency at English.
+  speakers under the US English native category are selected.
 \item Users who specified more than one native language are excluded. To help
   us to avoid improbable scenarios where users claim to be native in many
 languages.
@@ -137,30 +148,31 @@ as a testing set.
 \section{Experiments}
 \subsection{Features}
 \label{features}
-Given a training dataset, the comments are grouped by their class to construct
-frequency distribution of the following n-grams:
+Given a training dataset, the comments are grouped by classes. The following
+n-grams are constructed for each class:
 \begin{compactitem}
 \item 1-4 grams over the comments' words.
 \item 1-4 grams over the comments' characters.
 \item 1-4 grams over the part of speech tags of comments' words.
 \end{compactitem}
-For each class we will construct $3*4$ n-gram models. For each comment in the
-testing data we will construct a feature vector of the similarity scores between
-the comment and each n-gram models for every class. Therefore, if a problem has six
-classes, this will generate $6*3*4 = 72$ features for each comment.
+For each class, we will construct $3*4$ n-gram models. For each comment, we will
+construct a feature vector of the similarity scores between
+the comment and each of the n-gram models. Therefore, if a problem has six
+classes, $6*3*4 = 72$ features will be generated for each comment.
 
 For example, the similarity scores ($Sim$) calculated for a comment ($C$)
 against the words n-grams models $words\_model(n)$.
 
 \[
+  Sim(C, n) = \sum_{x \in grams(C,n)} \log_2 (count(x, n))
+\]
+
+\[
   count(x, n) = \left\{
   \begin{array}{l l}
-    words\_model(n, word), & \\\quad \text{if $x$ is in $words\_model(n)$}\\
-    1,&\\\quad \text{if $x$ is not seen before}\\
+    words\_model(n, word), & x \in words\_model(n)\\
+    1, & x \notin words\_model(n)\\
   \end{array} \right.
-\]
-\[
-  Sim(C, n) = \sum_{x \in ngrams(C,n)} \log_2 (count(x, n))
 \]
 
 Other features are also include the relative frequency of each of the stop words
@@ -413,25 +425,27 @@ the language models that supplies the frequency counts on the performance of the
 
 \section*{Conclusions and Future Work}
 \label{conc}
-Although our results show promising applications and trends using Wikipedia as a data
-source, there are still many paths to improve the results and discover more interesting insights.
 
-Moreover, as the learning curves show, it is worth the effort increasing the size
+Our results show the effectiveness of the features constructed in detecting writing styles
+of a challenging and diverse content. The robustness of the features helped us
+in building competitive classifiers on different tasks. Moreover, we were able
+to analyze common users usage pattern of English and discover grammatical and
+spelling errors.
+
+Different languages showed different effects on the writing styles of their
+speakers. We were able to identify such trends between users writing styles and
+cluster them into groups that supported the well studied origins of languages.
+
+The learning curves show, it is worth the effort increasing the size
 of the data in order of magnitude by adding the Wikipedia diffs, especially the
-non minor ones, as it represents another source of users' contributions. Moreover, the minimum size of the comments affects the performance of our classifiers, the relation between the quality of the data used and the accuracy of the classification is another interesting aspect.
-
-The languages families experiments suggest the usefulness of using the English
-writing styles to define the similarities between different languages. This
-could lead to an interesting explanations and/or observations regarding the
-origins of some languages as Korean language which is still a controversial topic.
-
-Another direction is to solve the over fitting problem in our learning algorithms by applying smarter feature selection and adding more distinguishing features.
+non minor ones, as it represents another source of users' contributions.
 
 \section*{Acknowledgements}
 We would like to thank Steven Skiena and Yanqing Chen for the discussion and the advice.
 We are also indebted to the NLTK and the Sklearn teams for producing excellent
 NLP and machine learning software libraries.
 
+\newpage
 \bibliography{myrefs}{}
 \bibliographystyle{apa}
 
