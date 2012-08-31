@@ -10,7 +10,7 @@
 \usepackage{caption}
 \usepackage{subcaption}
 
-\title{Detecting English Writing Styles For Non Native Speakers}
+\title{Detecting English Writing Styles For Non-native Speakers}
 
 \author{$Rami~Al-Rfou'~~~Yejin~Choi$ \\
   Department of Computer Science \\
@@ -22,8 +22,7 @@
 \begin{document}
 \maketitle
 \abstractEn{
-  Analyzing writing styles is an interesting linguistic research area. It  more
-  challenging task to study the writing styles of non native speakers. In this
+  Analyzing writing styles of non-native speakers. In this
   paper, we analyze the discussion pages of English Wikipedia which are written by a
   diverse group of users. Using learning algorithms we are able to detect
   native speakers writing style with an accuracy of 74\%. Given the large number
@@ -31,7 +30,7 @@
   by comparing the influence they have on English writing style of their
   speakers. Our results show that languages known to have the same origin and
   development path have similar footprint on the English writing style. To
-  enable further studies, the dataset we extracted from Wikipedia is
+  enable further studies, the dataset we extracted from Wikipedia will be made
   available publicly.
 }
 
@@ -42,7 +41,7 @@ Clustering}
 
 \section{Introduction}
 Stylometric analysis has important applications that cover deception detection, authorship attribution and vandalism detection.
-Analyzing writing styles for non native speakers becomes harder due to the influence of the native language on the usage of the new learned language.
+Analyzing writing styles for non-native speakers becomes harder due to the influence of the native language on the usage of the new learned language.
 Such influence introduces a bias in the orthographical and syntactic errors made by the author and the choice of vocabulary \cite{koppel2005automatically}.
 
 Previous work focused on smaller datasets like {International Corpus of Learner English} (ICLE) \cite{koppel2005automatically, koppel2005determining, argamon2009automatically}. This choice limits the number of the native languages targeted and the set of topics covered.
@@ -86,7 +85,7 @@ languages skills of the users and collect their contributions. To achieve the
 first task, Wikipedia has an information box called \emph{Babel} that users can
 add voluntarily to their profile pages to state their skills in different
 languages. A user can identify her native language
-and her skills in non native languages on a scale of 0-5.
+and her skills in non-native languages on a scale of 0-5.
 
 The task of collecting the contributions of a specific user is a more complex
 procedure. The diffs between Wikipedia pages revisions has to be generated and
@@ -113,7 +112,7 @@ description of the rules that were applied:
 \item English native speakers can pick more fine grained categories. Only
   speakers under the US English native category are selected. This decision was made to avoid the
   variations of English writing style among different dialects and countries. Moreover,
-  this step helps us to filter the non native speakers who are proficient in
+  this step helps us to filter the non-native speakers who are proficient in
   English so they chose the general Native English category for their skills
   instead of specifying their skill to be at level 5 fluency at English.
 \item Users who specified more than one native language are excluded. To help
@@ -126,7 +125,8 @@ comments. Comments were filtered according to the following criteria:
 \begin{compactitem}
 \item The accepted comments have to have at least 20 tokens.
 \item Proper nouns are replaced by their tags to avoid bias toward topics.
-\item Non ASCII characters are replaced by a special character to avoid bias toward non English characters usage in the comments.
+\item Non-ASCII characters are replaced by a special character to avoid bias
+toward non-English characters usage in the comments.
 \item The classifier has balanced number of comments for each of its classes.
   Therefore, the two baseline classifiers; the most common label and the random
   classifier will have an accuracy of \verb+1/(number of classes)+.
@@ -168,11 +168,11 @@ mentioned in the comment. The 125 stop words are extracted from the NLTK stop
 words corpus\cite{nltk}. Moreover, the average size of words, the size of the
 comments and the average number of sentences are also included.
 
-\subsection{Native vs Non Native Experiment}
+\subsection{Native vs Non-native Experiment}
 \label{exps}
-This experiment aims to detect the non native speakers writing styles. The
+This experiment aims to detect the non-native speakers writing styles. The
 classifier should be able to distinguish between comments by native speakers
-and other non native speakers.
+and other non-native speakers.
 All users with native language other than English are placed into one category.
 The number of comments used is around 322K comment. Table
 \ref{table:results} shows that the linear SVM classifier succeeds to reach
@@ -182,7 +182,7 @@ $74.53\%$ accuracy given the features explained in section \ref{features}.
   \begin{tabular}{l|ll}
 	Experiment & Logistic Regression & Linear SVM
 	\\\hline
-	Non Native & 74.45\% & 74.53\%\\
+	Non-native & 74.45\% & 74.53\%\\
 	Frequent & 50.27\% & 50.26\%\\
 	Families & 50.81\% &50.53\% \\
 \end{tabular}
@@ -197,19 +197,19 @@ Table \ref{table:nonnative} shows the most correlated grams with (non) native
 speakers.
 
 Analyzing the table \ref{table:nonnative}, we can notice that some of the n-grams
-indicate common grammatical mistakes in the non native speakers writing styles.
-For example, words unigrams show that non native speakers tend to use earth
+indicate common grammatical mistakes in the non-native speakers writing styles.
+For example, words unigrams show that non-native speakers tend to use earth
 instead of Earth. Characters bigram shows that separating the comma from the
-previous word by a space is a common usage of punctuation for non native speakers.
-The usage of articles is a problematic issue for non native speakers, in the
+previous word by a space is a common usage of punctuation for non-native speakers.
+The usage of articles is a problematic issue for non-native speakers, in the
 words 4-grams we can see using the article \emph{the} before a proper noun is
-frequent pattern, this trend of using \emph{the} more than needed can be confirmed by the characters bigrams where \emph{th} appears. Word trigram shows that native speakers use \emph{the} correctly in \emph{in the middle} where we expect non native speakers to use \emph{in middle}.
-Moreover, from the characters bigrams non native speakers use \emph{at} less
+frequent pattern, this trend of using \emph{the} more than needed can be confirmed by the characters bigrams where \emph{th} appears. Word trigram shows that native speakers use \emph{the} correctly in \emph{in the middle} where we expect non-native speakers to use \emph{in middle}.
+Moreover, from the characters bigrams non-native speakers use \emph{at} less
 than the native speakers which could suggest that they misuse the other articles
 where \emph{at} should be used. Characters bigrams shows a trend in spelling
-mistakes, where non native speakers type single \emph{l} instead of \emph{ll}.
+mistakes, where non-native speakers type single \emph{l} instead of \emph{ll}.
 Another spelling usage trend is the less frequent usage of apostrophes \emph{'},
-this can be traced by more frequent usage of \emph{am} in words unigrams for non native speakers and the appearance of \emph{don't} in the words 4-grams for native speakers.
+this can be traced by more frequent usage of \emph{am} in words unigrams for non-native speakers and the appearance of \emph{don't} in the words 4-grams for native speakers.
 
 \begin{table}[t]
   \begin{subtable}[]{0.5\textwidth}
@@ -241,7 +241,7 @@ this can be traced by more frequent usage of \emph{am} in words unigrams for non
                  && VBP NN IN NN\\
       \end{tabular}
     \label{table:nonnative}
-    \caption{Non native speakers experiment}
+    \caption{Non-native speakers experiment}
   \end{subtable}
   \begin{subtable}[]{0.5\textwidth}
    \begin{tabular}{l|ll}
@@ -288,9 +288,9 @@ style to the native speaker style. To test our basic intuition,
 we have to take advantage of the specific language fluency levels that the speaker can choose
 from the available Wikipedia Babel box categories. We designed two different
 variations of the previous experiment. In the first we limited
-the non native speakers category to the speakers with basic skills in English,
+the non-native speakers category to the speakers with basic skills in English,
 those who correspond to levels 0-2.
-While the second is composed of the more advanced non native speakers with
+While the second is composed of the more advanced non-native speakers with
 English levels ranging from 3-5.
 Figure \ref{fluency} shows the classifier error rate in the three previous
 variations.
@@ -298,7 +298,7 @@ variations.
 \begin{figure}
 \centering
 \includegraphics[scale=0.50]{fluency.png}
-\caption{Classification error rate against non native speakers with different
+\caption{Classification error rate against non-native speakers with different
 skills.}
 \label{fluency}
 \end{figure}
@@ -382,7 +382,7 @@ that were formed are the following:
 
 The above clusters support to large extent the literature classification of
 languages. Scrutinizing the 4-grams POS tags reveals more interesting
-observations regarding non native speakers usages for English. For example,
+observations regarding non-native speakers usages for English. For example,
 in Portuguese speakers comments the pattern \verb+IN DT NN PRP+ appears 0.13\%
 of the total number of their comments POS 4-grams. However, it only appears
 0.04\% in the Korean speakers comments. Another notice can be detected by
