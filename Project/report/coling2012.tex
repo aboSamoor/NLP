@@ -18,7 +18,7 @@
 %  NY 11794, USA \\
 %  \texttt{ \{ralrfou, ychoi\}@cs.stonybrook.edu}}
 
-\author{$John Smith ~~~ Jessica William$ \\
+\author{$John ~ Smith ~~~ Jessica ~ William$ \\
   Department of Computer Science \\
   \texttt{ \{abc, xyz\}@jfk.edu}}
 
@@ -28,8 +28,8 @@
 \abstractEn{
   Analyzing writing styles of non-native speakers is a challenging task. In this
   paper, we analyze the comments written in the discussion pages of the English
-Wikipedia. Using learning algorithms we are able to detect
-  native speakers writing style with an accuracy of 74\%. Given the diversity of
+Wikipedia. Using learning algorithms, we are able to detect
+  native speakers' writing style with an accuracy of 74\%. Given the diversity of
 the English Wikipedia users and the large number
   of languages they speak, we measure the similarities among their native
 languages
@@ -47,13 +47,13 @@ Clustering}
 \section{Introduction}
 Stylometric analysis has important applications that cover deception detection,
 authorship attribution and vandalism detection \cite{Harpalani, Ott}.
-Analyzing English writing styles for non-native speakers is harder task due to the
+Analyzing English writing styles for non-native speakers is a harder task due to the
 influence of their native spoken languages.
 Such influence introduces a bias in the orthographical and syntactic errors made by the author and the choice of vocabulary \cite{koppel2005automatically}.
 
-Previous work focused on smaller datasets like {International Corpus of Learner English} (ICLE) \cite{koppel2005automatically, koppel2005determining, argamon2009automatically}. This choice limits the number of the native languages targeted and the set of topics covered.
+Previous work, in this regard, focused on smaller datasets like {International Corpus of Learner English} (ICLE) \cite{koppel2005automatically, koppel2005determining, argamon2009automatically}. This choice limits the number of the native languages targeted and the set of topics covered.
 It also focuses on features that might only appear in the writing styles of
-students, like choice of words \cite{tsur2007using, zheng2003authorship,
+students, e.g. choice of words \cite{tsur2007using, zheng2003authorship,
 gamon2004linguistic}. Syntactic features as subject-verb disagreement, mismatch
 of noun-number pairs and wrong usage of determiners were studied by
 \cite{wong2009contrastive}.
@@ -61,95 +61,103 @@ of noun-number pairs and wrong usage of determiners were studied by
 to examine the frequency of some distinguishable grammar rules.
 
 Different from previous work, we use different data source. We extract users'
-comments from the English Wikipedia talk pages. Our dataset is more challenging to study for the following reasons:
-First, the comments tend to be shorter in length than the articles written by
-students learning English. Second, Wikipedia users represent more diverse
-spectrum of skills and the articles cover a wider range of topics. Moreover, the
-style of the comments is more conversational and loosely following proper English
-grammar which limits the choice of features used. Finally, the number of the
-languages targeted is larger. Our contributions in this paper are:
+comments from the English Wikipedia talk pages \footnote{Most Wikipedia pages
+have corresponding discussion pages which are called talk pages.}. Our dataset is more challenging to study for the following reasons:
+First, the comments tend to be shorter in length than the articles from ICLE,
+and they cover a diverse spectrum of topics.
+Second, Wikipedia users represent a wider
+range of fluency in English. Moreover, the
+style of the comments is colloquial which limits the choice of features used.
+Finally, the targeted languages are more. 
+Our contributions in this paper are:
 \begin{compactitem}
 \item Analyzing common mistakes and patterns of non-native
-speakers writing styles.
-\item Studying the similarities among languages through their effects on the
-English writing styles of their speakers.
+speakers' writing styles.
+\item Studying the similarities among languages using the English writing
+styles of the non-native speakers.
 \item Publicly available dataset composed of English Wikipedia users' comments.
 \end{compactitem}
 
-This paper is structured as follows. Section \ref{wiki} discusses various
+This paper is structured as follows: Section \ref{wiki} discusses various
 aspects of Wikipedia's structure and content. Section \ref{setup} describes
 the methodologies used to construct the dataset and filter the noise. In section
-\ref{features} we explain the features used in the following experiments.
-Section \ref{exps} discusses the results of the three major experiments conducted.
-Finally, we discuss our conclusions and possible venues of future work.
+\ref{exps_sec}, we discuss the experiments conducted.
+Finally, we conclude and present possible avenues of future research.
 
 \section{Wikipedia}
 \label{wiki}
 Wikipedia is the de facto source of knowledge for internet users. Recently, it
 is has been extensively used to help solving different information retrieval
-tasks, especially the ones that involves semantic aspects \cite{Milne08aneffective}.
-The use of Wikipedia can be expanded to help the
+tasks, especially the ones that involve semantic aspects \cite{Milne08aneffective}.
+Wikipedia can be used to help
  common NLP tools to perform better; the size of the data and the diversity of
- authors and topics plays a key role. Moreover, the sustained growth of Wikipedia
- content of can bring performance gains with no much additional complexity costs.
+ authors and topics play a key role. Moreover, the sustained growth of Wikipedia
+ content can bring performance gains with no additional complexity costs.
 
-With more than 90 thousand active users and 4.4 million article in its English
-version, the content of Wikipedia spans large number of topics. The diversity
-of authors beside the recorded versions that are stored in the database presents
-an interesting source of written language usage. Such resource presents a higher quality of data that is not achievable by the other commonly used sources of text as news, blogs and scientific articles.
+With more than 90 thousand active users and 4.4 million articles (in its English
+version), Wikipedia spans large number of topics.
+Wikipedia pages are saved under a control revision system that keeps track of
+users' edits and comments.
+Such resource presents a higher quality of data that is not achievable by the other commonly used sources of text as news, blogs and scientific articles.
 
-Such successful website has a complex database structure to serve its users.
-Therefore, extracting data is not trivial. Our goal is to identify the
-languages skills of the users and collect their contributions. To achieve the
-first task, Wikipedia has an information box called \emph{Babel} that users can
-add voluntarily to their profile pages to state their skills in different
+Wikipedia has a complex database structure to serve its users.
+Therefore, extracting data is not trivial. Our goal is to first identify the
+language skills of users and then collect their contributions. To identify the
+language skills, Wikipedia has an information box called \emph{Babel} that users can
+add voluntarily to their profile pages in order to state their skills in different
 languages. A user can identify her native language
 and her skills in non-native languages on a scale of 0-5.
 
 The task of collecting the contributions of a specific user is a more complex
-procedure. The diffs between Wikipedia pages revisions has to be generated and
+procedure. The differences among Wikipedia page revisions has to be generated and
 linked back to the user table. The resources we have are not sufficient enough to process such
 huge amount of data\footnote{Recent efforts were
 made to generate the diffs \url{http://dumps.wikimedia.org/other/diffdb/}}.
-Instead we noticed that Wikipedia pages have accompanying discussion pages where
+Instead we noticed that Wikipedia pages have accompanying talk pages where
 users discuss different aspects of the articles. In those pages, the style
 guideline encourages the user to sign her comments with her own signature that
-links back her user page. The style of writing of those
-talk pages are less formal and technical than the main pages of Wikipedia and has more conversational stylistic features.
+links back to her user page. The style of writing of these
+talk pages are less formal and technical than the main pages of Wikipedia and
+has more colloquial features.
 
 \section{Experimental Setup}
 \label{setup}
-In English Wikipedia, we found that around 60 thousands users specified their language skills, 47\% of
-them are English native speakers. The total number of comments found in the
-processed talk pages is around 12 million comment. Only 2.4 million comment has users with identified language skills. As not all the users contributes to the talk pages, the number of users who makes at least one comment in the extracted comments is around 30 thousand user.
+In English Wikipedia, we found that around 60 thousand users specified their language skills, 47\% of
+whom are English native speakers. The total number of comments found in the
+processed talk pages is around 12 million. Only 2.4 million comments have
+users with identified language skills. Since almost half of the users contribute to the
+talk pages, the number of users who make at least one comment is around 30 thousand.
 
 Since we have large number of comments and users, we have to filter the user
-base to increase the quality of the gathered data. The following is the
-description of the rules that were applied:
+base to increase the quality of the gathered data. The rules, specified for this
+filter, are as follows:
 \begin{compactitem}
-\item Only the users of the most frequent 20 native languages are considered.
-\item English native speakers can pick more fine grained categories. Only
-  speakers under the US English native category are selected.
-\item Users who specified more than one native language are excluded. To help
-  us to avoid improbable scenarios where users claim to be native in many
+\item Group the users by their native languages and only consider the
+users from the 20 most frequently used languages.
+\item English native speakers can pick more fine grained categories, e.g. UK
+English, US English, etc. Only
+  speakers under the US English category are selected.
+\item Users who specified more than one native language are excluded to help
+avoid improbable scenarios where users claim to be native in many
 languages.
 \end{compactitem}
 
-The dataset after filtering the users is now composed of 9857 user and 589228
+The dataset after filtering the users constitutes of 9857 users and 589228
 comments. Comments were filtered according to the following criteria:
 \begin{compactitem}
-\item The accepted comments have to have at least 20 tokens.
-\item Proper nouns are replaced by their tags to avoid bias toward topics.
+\item Comments need to have at least 20 tokens.
+\item Proper nouns are replaced by their Part of Speech (POS) tags to avoid bias toward topics.
 \item Non-ASCII characters are replaced by a special character to avoid bias
-toward non-English characters usage in the comments.
-\item The classifier has balanced number of comments for each of its classes.
-  Therefore, the two baseline classifiers; the most common label and the random
-  classifier will have an accuracy of \verb+1/(number of classes)+.
-\item The data set is split to 70\% training set, 10\% development set and 20\%
+toward non-English character usage in the comments.
+\item The classifier has the same number of comments for each of its classes.
+  The two baseline classifiers are: the most common label and the random
+  classifier. Each of these will have an accuracy of \verb+1/(number of classes)+.
+\item The dataset is split into 70\% training set, 10\% development set and 20\%
 as a testing set.
 \end{compactitem}
 
 \section{Experiments}
+\label{exps_sec}
 \subsection{Features}
 \label{features}
 Given a training dataset, the comments are grouped by classes. The following
@@ -179,7 +187,7 @@ against the words n-grams models $words\_model(n)$.
   \end{array} \right.
 \]
 
-Other features are also include the relative frequency of each of the stop words
+Other features also include the relative frequency of each of the stop words
 mentioned in the comment. The 125 stop words are extracted from the NLTK stop
 words corpus\cite{nltk}. Moreover, the average size of words, the size of the
 comments and the average number of sentences are also included.
@@ -190,9 +198,9 @@ This experiment aims to detect the non-native speakers writing styles. The
 classifier should be able to distinguish between comments by native speakers
 and other non-native speakers.
 All users with native language other than English are placed into one category.
-The number of comments used is around 322K comment. Table 
-\ref{table:results} shows that the linear SVM classifier succeeds to reach
-$74.53\%$ accuracy given the features explained in section \ref{features}.
+The number of comments used is around 322K. Table 
+\ref{table:results} shows that the linear SVM classifier reaches
+$74.53\%$ accuracy, given the features explained in section \ref{features}.
 \begin{table}
   \begin{center}
   \begin{tabular}{l|ll}
@@ -207,25 +215,30 @@ $74.53\%$ accuracy given the features explained in section \ref{features}.
 \end{center}
 \end{table}
 
-The most informative features are words trigrams, words uni-gram, words bi-gram,
-words 4-gram, characters bigrams, POS tags 4-grams, ordered by their importance.
-Table \ref{table:nonnative} shows the most correlated grams with (non) native
+The most informative features are word trigrams, word unigrams, word bigrams,
+word 4-grams, character bigrams, POS tag 4-grams, ordered by their importance.
+Table \ref{table:nonnative} shows the most correlated grams with native and non-native
 speakers.
 
 Analyzing table \ref{table:nonnative}, we can notice that some of the n-grams
-indicate common grammatical mistakes in the non-native speakers writing styles.
-For example, words unigrams show that non-native speakers tend to use earth
-instead of Earth. Characters bigram shows that separating the comma from the
+indicate common grammatical mistakes in non-native speakers' writing styles.
+For example, word unigrams show that non-native speakers tend to use ``earth''
+instead of ``Earth''. Character bigrams show that separating the comma from the
 previous word by a space is a common usage of punctuation for non-native speakers.
-The usage of articles is a problematic issue for non-native speakers, in the
-words 4-grams we can see using the article \emph{the} before a proper noun is
-frequent pattern, this trend of using \emph{the} more than needed can be confirmed by the characters bigrams where \emph{th} appears. Word trigram shows that native speakers use \emph{the} correctly in \emph{in the middle} where we expect non-native speakers to use \emph{in middle}.
-Moreover, from the characters bigrams non-native speakers use \emph{at} less
-than the native speakers which could suggest that they misuse the other articles
-where \emph{at} should be used. Characters bigrams shows a trend in spelling
-mistakes, where non-native speakers type single \emph{l} instead of \emph{ll}.
-Another spelling usage trend is the less frequent usage of apostrophes \emph{'},
-this can be traced by more frequent usage of \emph{am} in words unigrams for non-native speakers and the appearance of \emph{don't} in the words 4-grams for native speakers.
+The usage of determiners is a problematic issue for non-native speakers. In the
+word 4-grams, we can see a common mistake in the use of ``the'' before a proper
+noun. The over-usage of ``the'' can be
+validated by looking at the character bigrams where ``th'' appears. Word
+trigrams show
+that native speakers use ``the'' correctly in ``in the middle'' where we
+expect non-native speakers to use ``in middle''.
+Moreover, from the character bigrams, non-native speakers use ``at'' less
+than the native speakers which might suggest that they incorrectly use other articles
+in place of ``at''. Character bigrams show a trend in spelling
+mistakes where non-native speakers type single ``l'' instead of ``ll''.
+Another mistake is the less frequent usage of apostrophes `` ' '';
+this can be traced to more frequent usage of ``am'' in word unigrams for
+non-native speakers and the appearance of ``don't'' in the word 4-grams for native speakers.
 
 \begin{table}[t]
   \begin{subtable}[]{0.5\textwidth}
@@ -300,16 +313,16 @@ features the z-scores of each n-gram are calculated. The n-grams with the
 highest z-scores are reported in the table.}
 \end{table}
 
-The more fluent the speaker is in English the closer his/her writing
+The more fluent the speaker is in English, the closer her writing
 style to the native speaker style. To test our basic intuition,
-we have to take advantage of the specific language fluency levels that the speaker can choose
-from the available Wikipedia Babel box categories. We designed two different
-variations of the previous experiment. In the first we limited
-the non-native speakers category to the speakers with basic skills in English,
-those who correspond to levels 0-2.
-While the second is composed of the more advanced non-native speakers with
-English levels ranging from 3-5.
-Figure \ref{fluency} shows the classifier error rate in the three previous
+we take advantage of the specific language fluency levels that the user
+specified in the available Wikipedia Babel box. We designed two different
+variations of the previous experiment. In the first, we limited
+the non-native speaker's class to the speakers with basic English skills
+(identified by the fluency scale 0-2).
+Whereas the second variant is composed of the more advanced non-native speakers with
+English fluency levels ranging from scale 3-5.
+Figure \ref{fluency} shows the classifier error rate in the previous three
 variations.
 
 \begin{figure}
@@ -320,23 +333,23 @@ skills.}
 \label{fluency}
 \end{figure}
 
-The increase of the error rate of classification confirms our intuition.
-Moreover, it increases our confidence in the information the users mention in
-their profiles regarding their language skills.
+The increase in the error rate of classification confirms our intuition.
+Moreover, it increases our confidence in the information given by the users,
+regarding their language skills, in their profiles.
 
 \subsection{Frequent Languages Experiment}
 \label{frequent}
 This experiment aims to classify the comments written by the speakers of the most frequent native languages.
-Six languages are selected US-EN, German, Spanish, French, Russian and Dutch.
+Six languages are selected: US-EN, German, Spanish, French, Russian and Dutch.
 Figure \ref{pop_cfm} shows the confusion matrix of the logistic regression
 classifier.
 Table \ref{table:results} shows that the best accuracy that the classifier
-achieved is 50.27\% with 150K comment used. We can see clearly that the
-Russian users are the easiest to identify. Moreover, the classifier is mostly
-confused distinguishing the German and the Dutch users with error $>2.0\%$ and
-to a less degree between (EN-US, French). These numbers confirm a basic
+achieved is 50.27\% with 150K comments used. Looking at Figure \ref{pop_cfm}, we can see clearly that the
+Russian users are the easiest to identify. Moreover, the classification error is
+the highest in distinguishing the German and the Dutch users. These numbers confirm a basic
 intuition that the languages that have geographical proximity will have more
-borrowed words and grammars between them. Accordingly this will affect their speakers writing styles in English.
+borrowed words and grammars among them. Accordingly, this will affect their
+speakers' writing styles in English.
 
 \begin{figure}
 
@@ -354,23 +367,22 @@ borrowed words and grammars between them. Accordingly this will affect their spe
 \caption{Confusion Matrices of different Experiments}
 \end{figure}
 
-The most informative features are ordered as the following, words bigrams, words
-unigrams, words trigrams, characters 4 grams, words 4 grams, POS tags 4-grams.
-We can see that the features of the longer grams become less informative once we
+The most informative features are ordered as follows: word bigrams, word
+unigrams, word trigrams, character 4-grams, word 4-grams, POS tag 4-grams.
+We can see that the features of the longer grams become less informative, once we
 increased the number of classes given to the classifier because of sparsity.
-It may also indicate the influence of the topic of the comment on the
+It may also indicate that there is an influence of the comment's topic on the
 classification. Table \ref{frequent} shows some different mistakes made by
-different native speakers. For example, for French speakers ownr was a common
-mistake and not adding the space after the comma was another Spanish speakers
-mistake.
+different native speakers. For example, for French speakers ``ownr'' was a common
+mistake and not adding the space after the comma was another one among the Spanish speakers.
 
 \subsection{Languages Families Experiment}
 
 Looking at experiment \ref{exps}, the confusion in classifying Dutch and German
 users suggests that there is a similarity between groups of languages. Referring
 to the linguistics research history of classifying the languages into families
-according to similar features and development history, this experiment tries to
-put such grouping under the microscope. The following 18 languages are grouped into 5 families as:
+according to similar features and development history, this experiment validates
+such grouping. The following 18 languages are grouped into 5 families as:
 \begin{compactitem}
 \item \textbf{Germanic}: German, Dutch, Norwegian, Swedish, Danish.
 \item \textbf{Romanace}: Spanish, French, Portuguese, Italian.
@@ -379,7 +391,10 @@ put such grouping under the microscope. The following 18 languages are grouped i
 \item \textbf{Slavic}: Russian, Polish
 \end{compactitem}
 
-Figure \ref{fam_cfm} shows that the Slavic and Asian native speakers has a clear style of writing English that is easy to detect relatively. The highest confusion in classification is between the Germanic and Romance languages, where geographical proximity plays a role in similarity. With the same reasoning we can see the confusion between Germanic and Uralic languages.
+Figure \ref{fam_cfm} shows that the Slavic and Asian native speakers have a
+clear English writing style which is easier to detect. The highest confusion in
+classification is between the Germanic and Romance languages, where geographical
+proximity plays a role in similarity. With the same reasoning, we can see the confusion between Germanic and Uralic languages.
 
 
 Taking the opposite approach, we took the speakers of the most frequent 20
@@ -397,27 +412,27 @@ that were formed are the following:
 \item \textbf{Cluster 6}: Hungarian, German, US-EN.
 \end{compactitem}
 
-The above clusters support to large extent the literature classification of
-languages. Scrutinizing the 4-grams POS tags reveals more interesting
-observations regarding non-native speakers usages for English. For example,
-in Portuguese speakers comments the pattern \verb+IN DT NN PRP+ appears 0.13\%
-of the total number of their comments POS 4-grams. However, it only appears
-0.04\% in the Korean speakers comments. Another notice can be detected by
+The above clusters, to large extent, support the literature classification of
+languages. Scrutinizing the 4-grams POS tags reveal more interesting
+observations regarding non-native speaker's usage of English. For example,
+in Portuguese speakers' comments, the pattern \verb+IN DT NN PRP+ appears 0.13\%
+of the total number of their POS 4-grams. However, it only appears
+0.04\% in the Korean speakers' comments. Another observation can be seen by
 looking at the \verb+NN NN IN DT+'s usage in Portuguese and Polish comments. It
 appears 0.15\% in the former POS 4-grams but only 0.05\% in the later. Arabic
 speakers tend to use the pattern \verb+TO DT NN IN+ so frequently that it
-appears 0.11\% while it is less than 0.06\% for other speakers POS 4-gram
+appears 0.11\% while it is less than 0.06\% for other speakers' POS 4-grams
 distributions. Finally, Japanese and Danish speakers slightly prefer the pattern
 \verb+NN PRP VBZ RB+ more than others.
 
 \subsection{Learning Algorithms}
 
-Figure \ref{comb_lc} shows a typical over fitting situation where the more data
-you have the better the classifier can achieve. And here the size of data that
+Figure \ref{comb_lc} shows a typical over-fitting situation where more data
+you have, the better rate the classifier can achieve. Here, the size of data that
 can be extracted from Wikipedia plays a significant role to boost the accuracy
 from 37\% to over 50\% in case of the Frequent languages and Families of
 languages experiments. This confirms the importance of the coverage of words in
-the language models that supplies the frequency counts on the performance of the classifier.
+the language models that supply the frequency counts on the performance of the classifier.
 
 \begin{figure}[t]
 \centering
@@ -433,16 +448,16 @@ the language models that supplies the frequency counts on the performance of the
 Our results show the effectiveness of the features constructed in detecting writing styles
 of a challenging and diverse content. The robustness of the features helped us
 in building competitive classifiers on different tasks. Moreover, we were able
-to analyze common users usage pattern of English and discover grammatical and
+to analyze common users' usage patterns of English and discover grammatical and
 spelling errors.
 
 Different languages showed different effects on the writing styles of their
-speakers. We were able to identify such trends between users writing styles and
+speakers. We were able to identify such trends between users' writing styles and
 cluster them into groups that supported the well studied origins of languages.
 
-The learning curves show, it is worth the effort increasing the size
+The learning curves show that it is worth increasing the size
 of the data in order of magnitude by adding the Wikipedia diffs, especially the
-non minor ones, as it represents another source of users' contributions.
+non-minor ones, as it represents another source of users' contributions.
 
 \section*{Acknowledgements}
 We would like to thank William and John for the discussion and the advice.
