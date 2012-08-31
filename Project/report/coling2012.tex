@@ -22,7 +22,7 @@
 \begin{document}
 \maketitle
 \abstractEn{
-  Analyzing writing styles of non-native speakers. In this
+  Analyzing writing styles of non-native speakers is a challenging task. In this
   paper, we analyze the discussion pages of English Wikipedia which are written by a
   diverse group of users. Using learning algorithms we are able to detect
   native speakers writing style with an accuracy of 74\%. Given the large number
@@ -174,7 +174,7 @@ This experiment aims to detect the non-native speakers writing styles. The
 classifier should be able to distinguish between comments by native speakers
 and other non-native speakers.
 All users with native language other than English are placed into one category.
-The number of comments used is around 322K comment. Table
+The number of comments used is around 322K comment. Table 
 \ref{table:results} shows that the linear SVM classifier succeeds to reach
 $74.53\%$ accuracy given the features explained in section \ref{features}.
 \begin{table}
@@ -196,7 +196,7 @@ words 4-gram, characters bigrams, POS tags 4-grams, ordered by their importance.
 Table \ref{table:nonnative} shows the most correlated grams with (non) native
 speakers.
 
-Analyzing the table \ref{table:nonnative}, we can notice that some of the n-grams
+Analyzing table \ref{table:nonnative}, we can notice that some of the n-grams
 indicate common grammatical mistakes in the non-native speakers writing styles.
 For example, words unigrams show that non-native speakers tend to use earth
 instead of Earth. Characters bigram shows that separating the comma from the
@@ -240,8 +240,8 @@ this can be traced by more frequent usage of \emph{am} in words unigrams for non
                  &Native& \textbf{,} PRP VBZ JJ\\
                  && VBP NN IN NN\\
       \end{tabular}
-    \label{table:nonnative}
     \caption{Non-native speakers experiment}
+    \label{table:nonnative}
   \end{subtable}
   \begin{subtable}[]{0.5\textwidth}
    \begin{tabular}{l|ll}
@@ -275,9 +275,10 @@ this can be traced by more frequent usage of \emph{am} in words unigrams for non
    && \\
    && \\
    \end{tabular}
-   \label{table:frequent}
    \caption{Most frequent languages experiment}
+   \label{table:frequent}
    \end{subtable}
+\label{table:analysis}
 \caption{Correlated grams and speakers. For each class and each informative
 features the z-scores of each n-gram are calculated. The n-grams with the
 highest z-scores are reported in the table.}
@@ -412,9 +413,10 @@ the language models that supplies the frequency counts on the performance of the
 
 \section*{Conclusions and Future Work}
 \label{conc}
-As our results shows promising applications and trends using Wikipedia data to solve hard problems in robust means, there are many paths to improve our results and discover more interesting insights.
+Although our results show promising applications and trends using Wikipedia as a data
+source, there are still many paths to improve the results and discover more interesting insights.
 
-Moreover, as the learning curves show, it worth the effort increasing the size
+Moreover, as the learning curves show, it is worth the effort increasing the size
 of the data in order of magnitude by adding the Wikipedia diffs, especially the
 non minor ones, as it represents another source of users' contributions. Moreover, the minimum size of the comments affects the performance of our classifiers, the relation between the quality of the data used and the accuracy of the classification is another interesting aspect.
 
